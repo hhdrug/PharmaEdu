@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { getCategories, getDailyQuestion, getQuestionCount } from '@/lib/quiz/client';
 import { DIFFICULTY_LABEL, DIFFICULTY_VARIANT } from '@/lib/quiz/types';
+import { QuizHistoryWidget } from './QuizHistoryWidget';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,6 +89,9 @@ export default async function QuizHomePage() {
           </Link>
         </Card>
       </section>
+
+      {/* ── 최근 퀴즈 기록 ── */}
+      <QuizHistoryWidget />
 
       {/* ── 카테고리별 퀴즈 ── */}
       <section>

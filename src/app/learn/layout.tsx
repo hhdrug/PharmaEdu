@@ -3,7 +3,19 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { CHAPTERS, DIFFICULTY_COLORS } from '@/content/chapters/index';
+import { BookOpen, Menu, X, ChevronRight, Clock } from 'lucide-react';
+import { CHAPTERS } from '@/content/chapters/index';
+import { useVisitedChapters, VisitedDot } from './_components/ProgressTracker';
+import { Badge } from '@/components/ui/Badge';
+import type { Difficulty } from '@/content/chapters/index';
+
+/** Difficulty -> Badge variant 매핑 */
+const DIFFICULTY_BADGE: Record<Difficulty, 'success' | 'info' | 'warning' | 'error'> = {
+  '입문': 'success',
+  '기초': 'info',
+  '중급': 'warning',
+  '심화': 'error',
+};
 
 export default function LearnLayout({
   children,
@@ -12,86 +24,137 @@ export default function LearnLayout({
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { visited } = useVisitedChapters();
+
+  const visitedCount = CHAPTERS.filter((ch) => visited.has(ch.slug)).length;
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* 모바일 헤더 (사이드바 토글) */}
-      <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-neutral-200 sticky top-0 z-30">
+    <div className="min-h-screen bg-bg-page">
+      {/* 모바일 헤더 */}
+      <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-bg-surface border-b border-border-light sticky top-0 z-30 shadow-sm">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label="챕터 목록 열기/닫기"
-          className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
+          aria-label={sidebarOpen ? '챕터 목록 닫기' : '챕터 목록 열기'}
+          className="p-2 rounded-lg hover:bg-neutral-100 transition-colors text-text-primary"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-            {sidebarOpen ? (
-              <>
-                <path d="M4 4l12 12M4 16L16 4" />
-              </>
-            ) : (
-              <>
-                <path d="M2 5h16M2 10h16M2 15h16" />
-              </>
-            )}
-          </svg>
+          {sidebarOpen ? (
+            <X className="w-5 h-5" aria-hidden="true" />
+          ) : (
+            <Menu className="w-5 h-5" aria-hidden="true" />
+          )}
         </button>
-        <span className="font-semibold text-sm text-neutral-700">팜에듀 — 학습</span>
+        <span className="font-semibold text-sm text-text-primary">팜에듀 — 학습</span>
+        {visitedCount > 0 && (
+          <span className="ml-auto text-xs text-text-muted">
+            {visitedCount}/{CHAPTERS.length} 완료
+          </span>
+        )}
       </div>
 
       <div className="flex">
-        {/* 사이드바 오버레이 (모바일) */}
+        {/* 모바일 오버레이 */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/30 z-20 lg:hidden"
+            className="fixed inset-0 bg-black/50 z-20 lg:hidden"
             onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
           />
         )}
 
         {/* 사이드바 */}
         <aside
           className={[
-            'fixed top-0 left-0 h-full w-72 bg-white border-r border-neutral-200 z-30 overflow-y-auto transition-transform duration-300',
+            'fixed top-0 left-0 h-full w-72 bg-bg-sidebar z-30 overflow-y-auto transition-transform duration-300',
+            'flex flex-col',
             'lg:sticky lg:top-0 lg:translate-x-0 lg:flex-shrink-0',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
           ].join(' ')}
+          style={{ boxShadow: 'var(--shadow-sidebar)' }}
         >
-          <div className="p-4 border-b border-neutral-100">
+          {/* 사이드바 헤더 */}
+          <div className="p-4 border-b border-white/10 flex-shrink-0">
             <Link
               href="/learn"
-              className="block text-base font-bold text-primary-700 hover:text-primary-500 transition-colors"
+              className="flex items-center gap-2 text-white hover:text-secondary-500 transition-colors"
               onClick={() => setSidebarOpen(false)}
             >
-              📚 챕터 목록
+              <BookOpen className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+              <span className="font-bold text-base">챕터 목록</span>
             </Link>
+            {/* 진행률 표시 */}
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs text-neutral-400">학습 진행률</span>
+                <span className="text-xs text-neutral-300 font-mono">
+                  {visitedCount}/{CHAPTERS.length}
+                </span>
+              </div>
+              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary-500 rounded-full transition-all duration-500"
+                  style={{ width: `${(visitedCount / CHAPTERS.length) * 100}%` }}
+                  role="progressbar"
+                  aria-valuenow={visitedCount}
+                  aria-valuemin={0}
+                  aria-valuemax={CHAPTERS.length}
+                  aria-label={`학습 진행률 ${visitedCount}/${CHAPTERS.length}`}
+                />
+              </div>
+            </div>
           </div>
 
-          <nav className="py-2">
+          {/* 챕터 네비게이션 */}
+          <nav className="flex-1 py-2 overflow-y-auto" aria-label="챕터 목록">
             {CHAPTERS.map((chapter) => {
               const href = `/learn/${chapter.slug}`;
               const isActive = pathname === href;
+              const isVisited = visited.has(chapter.slug);
+
               return (
                 <Link
                   key={chapter.slug}
                   href={href}
                   onClick={() => setSidebarOpen(false)}
                   className={[
-                    'flex items-start gap-3 px-4 py-3 text-sm transition-colors hover:bg-primary-50',
+                    'flex items-start gap-3 px-4 py-3 mx-2 rounded-lg text-sm transition-colors',
                     isActive
-                      ? 'bg-primary-50 border-r-2 border-primary-500 text-primary-700 font-medium'
-                      : 'text-neutral-700 border-r-2 border-transparent',
+                      ? 'bg-primary-500 text-white'
+                      : 'text-neutral-300 hover:text-white hover:bg-white/10',
                   ].join(' ')}
+                  aria-current={isActive ? 'page' : undefined}
                 >
-                  <span className="flex-shrink-0 w-10 text-xs font-mono text-neutral-400 pt-0.5">
+                  <span className={[
+                    'flex-shrink-0 w-10 text-xs font-mono pt-0.5',
+                    isActive ? 'text-white/80' : 'text-neutral-400',
+                  ].join(' ')}>
                     {chapter.number}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="truncate font-medium leading-snug">{chapter.title}</div>
-                    <div className="mt-1 flex items-center gap-1.5">
-                      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${DIFFICULTY_COLORS[chapter.difficulty]}`}>
-                        {chapter.difficulty}
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate font-medium leading-snug flex-1">
+                        {chapter.title}
                       </span>
-                      <span className="text-xs text-neutral-400">{chapter.estimatedMinutes}분</span>
+                      <VisitedDot slug={chapter.slug} visited={visited} />
+                    </div>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <Badge
+                        variant={DIFFICULTY_BADGE[chapter.difficulty]}
+                        className="text-[10px] h-4 px-1.5"
+                      >
+                        {chapter.difficulty}
+                      </Badge>
+                      <span className={[
+                        'text-xs flex items-center gap-0.5',
+                        isActive ? 'text-white/60' : 'text-neutral-500',
+                      ].join(' ')}>
+                        <Clock className="w-3 h-3" aria-hidden="true" />
+                        {chapter.estimatedMinutes}분
+                      </span>
                     </div>
                   </div>
+                  {isActive && (
+                    <ChevronRight className="w-4 h-4 text-white/60 flex-shrink-0 self-center" aria-hidden="true" />
+                  )}
                 </Link>
               );
             })}

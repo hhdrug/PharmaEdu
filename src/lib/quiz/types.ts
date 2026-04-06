@@ -22,6 +22,7 @@ export interface QuizCategory {
   description: string | null;
   icon: string | null;
   order_idx: number;
+  chapter: string | null;  // DB-driven 챕터 매핑 (migration 003 이후)
 }
 
 /** 사용자 답변 결과 */

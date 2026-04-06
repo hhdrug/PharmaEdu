@@ -1,4 +1,4 @@
-import { getQuestions, getRandomQuestions, getDailyQuestion } from '@/lib/quiz/client';
+import { getQuestions, getRandomQuestions, getDailyQuestion, getCategoryChapter } from '@/lib/quiz/client';
 import type { QuizQuestion } from '@/lib/quiz/types';
 import { QuizPlayer } from './QuizPlayer';
 
@@ -21,20 +21,14 @@ async function loadQuestions(searchParams: Awaited<PageProps['searchParams']>): 
     return getRandomQuestions(isNaN(n) ? 5 : n);
   }
 
-  // 카테고리별 (slug → chapter 매핑)
+  // 카테고리별 — DB-driven slug → chapter 매핑 (하드코딩 제거)
   if (searchParams.category) {
-    const categorySlugToChapter: Record<string, string> = {
-      'basic-calc': 'CH01',
-      'copayment': 'CH05',
-      'rounding': 'CH07',
-      'insu-type': 'CH05',
-      'special-case': 'CH05',
-    };
-    const chapter = categorySlugToChapter[String(searchParams.category)];
+    const slug = String(searchParams.category);
+    const chapter = await getCategoryChapter(slug);
     if (chapter) {
       return getQuestions({ chapter, limit: 10 });
     }
-    // 전체 조회 fallback
+    // chapter 컬럼이 아직 없는 환경(migration 미적용)에서는 전체 조회로 fallback
     return getQuestions({ limit: 10 });
   }
 
@@ -55,5 +49,13 @@ export default async function QuizPlayPage({ searchParams }: PageProps) {
       ? '카테고리 퀴즈'
       : '무작위 퀴즈';
 
-  return <QuizPlayer questions={questions} title={title} />;
+  const category = params.daily
+    ? 'daily'
+    : params.random
+    ? `random-${params.random}`
+    : params.category
+    ? String(params.category)
+    : 'random';
+
+  return <QuizPlayer questions={questions} title={title} category={category} />;
 }

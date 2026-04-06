@@ -81,12 +81,40 @@ export async function getQuestions(opts?: {
 
 /**
  * 무작위 N개 문제 (서버 컴포넌트용)
- * Supabase에는 ORDER BY RANDOM()이 없으므로 전체 조회 후 클라이언트 셔플
+ * get_random_questions RPC를 사용해 DB에서 직접 랜덤 샘플링 (migration 003 이후).
+ * RPC가 없는 환경(local 개발 등)에서는 COUNT → random offset 방식으로 fallback.
  */
 export async function getRandomQuestions(n: number): Promise<QuizQuestion[]> {
-  const all = await getAllQuestions();
-  const shuffled = [...all].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
+  const supabase = await createServerSupabase();
+
+  // 1차 시도: RPC 방식 (DB-side ORDER BY random())
+  const { data: rpcData, error: rpcError } = await supabase
+    .rpc('get_random_questions', { n });
+
+  if (!rpcError && rpcData && rpcData.length > 0) {
+    return rpcData as QuizQuestion[];
+  }
+
+  // fallback: COUNT → 랜덤 오프셋 2회 분산 샘플링
+  const { count } = await supabase
+    .from('quiz_question')
+    .select('*', { count: 'exact', head: true });
+
+  const total = count ?? 0;
+  if (total === 0) return [];
+
+  const offset = Math.floor(Math.random() * Math.max(0, total - n));
+  const { data, error } = await supabase
+    .from('quiz_question')
+    .select('*')
+    .range(offset, offset + n - 1);
+
+  if (error) {
+    console.error('[quiz/client] getRandomQuestions fallback error:', error.message);
+    return [];
+  }
+  // 클라이언트 셔플은 fallback에서만 수행
+  return ([...(data ?? [])] as QuizQuestion[]).sort(() => Math.random() - 0.5);
 }
 
 /**
@@ -162,4 +190,48 @@ export async function getCategoriesClient(): Promise<QuizCategory[]> {
     .order('order_idx');
   if (error) return [];
   return (data ?? []) as QuizCategory[];
+}
+
+/**
+ * slug → chapter 조회 (DB-driven, 서버 컴포넌트용)
+ * migration 003 적용 후 quiz_category.chapter 컬럼에서 읽어옴.
+ * 컬럼이 없거나 null이면 null 반환.
+ */
+export async function getCategoryChapter(slug: string): Promise<string | null> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from('quiz_category')
+    .select('chapter')
+    .eq('slug', slug)
+    .maybeSingle();
+
+  if (error || !data) {
+    console.error('[quiz/client] getCategoryChapter error:', error?.message);
+    return null;
+  }
+  return (data as { chapter: string | null }).chapter;
+}
+
+/**
+ * 클라이언트 컴포넌트에서 무작위 N개 문제 조회
+ * get_random_questions RPC 사용, fallback으로 클라이언트 셔플
+ */
+export async function getRandomQuestionsClient(n: number): Promise<QuizQuestion[]> {
+  const supabase = createClient();
+
+  const { data: rpcData, error: rpcError } = await supabase
+    .rpc('get_random_questions', { n });
+
+  if (!rpcError && rpcData && rpcData.length > 0) {
+    return rpcData as QuizQuestion[];
+  }
+
+  // fallback: 전체 조회 후 클라이언트 셔플
+  const { data, error } = await supabase
+    .from('quiz_question')
+    .select('*');
+  if (error) return [];
+  return ([...(data ?? [])] as QuizQuestion[])
+    .sort(() => Math.random() - 0.5)
+    .slice(0, n);
 }

@@ -52,6 +52,25 @@ export interface DrugItem {
   insuDrug?: boolean;
 }
 
+// ─── MediIllnessInfo ─────────────────────────────────────────────────────────
+
+/**
+ * 산정특례 질병코드 상세 정보 (V252/V103 등)
+ * C# MediIllnessInfo 포팅
+ */
+export interface MediIllnessInfo {
+  /** 질병코드 (V103, V252 등) */
+  code: string;
+  /** 본인부담율 (%) */
+  rate: number;
+  /** V252 계열 여부 */
+  isV252: boolean;
+  /** 등급 (V252 0~9) */
+  grade?: number;
+  /** 설명 */
+  description?: string;
+}
+
 // ─── CalcOptions ─────────────────────────────────────────────────────────────
 
 /**
@@ -81,6 +100,56 @@ export interface CalcOptions {
   drugList: DrugItem[];
   /** 질병코드 (V252 산정특례 등) */
   mediIllness?: string;
+
+  // ── [NEW] 보훈 관련 ────────────────────────────────────────────────────────
+  /** 보훈코드 (M10~M90) — veteran.ts */
+  bohunCode?: string;
+  /** 요양기관기호 — isBohunHospital() 판정 */
+  hospCode?: string;
+  /** 위탁 여부 (G10=비위탁, G20=위탁) — veteran.ts */
+  isMPVBill?: boolean;
+  /** 심사기관 여부 — veteran.ts M81~M83 후처리 분기 */
+  isSimSa?: boolean;
+
+  // ── [NEW] 의료급여 관련 ────────────────────────────────────────────────────
+  /** B014/B030 등 수급권자 유형 — medical-aid.ts */
+  sbrdnType?: string;
+  /** 건강생활유지비 잔액 (원) — medical-aid.ts */
+  eHealthBalance?: number;
+  /** 보건기관 처방전 여부 — medical-aid.ts */
+  isHealthCenterPresc?: boolean;
+  /** 의료급여 등급 ('5' → 면제) — medical-aid.ts */
+  hgGrade?: string;
+
+  // ── [NEW] 자동차보험 관련 ──────────────────────────────────────────────────
+  /** 할증율 (%) — auto-insurance.ts */
+  addRat?: number;
+
+  // ── [NEW] 직접조제 ────────────────────────────────────────────────────────
+  /** 직접조제 여부 — direct-dispensing.ts */
+  isDirectDispensing?: boolean;
+
+  // ── [NEW] 비대면/복약상담 ─────────────────────────────────────────────────
+  /** 비대면 조제 여부 — counseling.ts */
+  isNonFace?: boolean;
+  /** 복약상담 제공 여부 — counseling.ts */
+  hasCounseling?: boolean;
+  /** 달빛어린이약국 여부 — counseling.ts */
+  isDalbitPharmacy?: boolean;
+
+  // ── [NEW] 산정특례 ────────────────────────────────────────────────────────
+  /** 상세 특정기호 정보 — exemption.ts */
+  mediIllnessInfo?: MediIllnessInfo;
+  /** B코드 질병코드 (F008 코로나 등) */
+  mediIllnessB?: string;
+
+  // ── [NEW] 장려금/기타 ─────────────────────────────────────────────────────
+  /** 대체조제/사용장려금 합계 (원) */
+  incentiveSum?: number;
+  /** 연간 누적 본인부담액 (본인부담상한제용) — safety-net.ts */
+  yearlyAccumulated?: number;
+  /** 소득분위 (1~10, 본인부담상한제용) — safety-net.ts */
+  incomeDecile?: number;
 }
 
 // ─── InsuRate ────────────────────────────────────────────────────────────────
@@ -96,6 +165,12 @@ export interface InsuRate {
   mcode: number;
   bcode: number;
   age65_12000Less: number;
+
+  // ── [NEW] V252 산정특례 등급별 요율 ─────────────────────────────────────
+  /** V252 0등급 요율 (%) — exemption.ts */
+  v2520?: number;
+  /** V252 1등급 요율 (%) — exemption.ts */
+  v2521?: number;
 }
 
 // ─── WageListItem ─────────────────────────────────────────────────────────────
@@ -136,6 +211,46 @@ export interface CalcResult {
   steps: CalcStep[];
   /** 오류 메시지 (있을 경우) */
   error?: string;
+
+  // ── [NEW] 3자배분 ─────────────────────────────────────────────────────────
+  /** 보훈청 청구액 — veteran.ts */
+  mpvaPrice?: number;
+  /** 공단 청구액 (= pubPrice와 다를 수 있음) — veteran.ts/safety-net.ts */
+  insuPrice?: number;
+  /** 실수납금 = userPrice - pubPrice */
+  realPrice?: number;
+  /** 최종 환자수납액 (비급여 포함) */
+  sumUser?: number;
+  /** 최종 공단청구액 */
+  sumInsure?: number;
+
+  // ── [NEW] 특수약품 ────────────────────────────────────────────────────────
+  /** 648903860 약품금액 합계 — drug-648.ts */
+  sum648?: number;
+  /** 100% 자부담 약품금액 합계 */
+  sumInsuDrug100?: number;
+  /** 100% 약품 총액 */
+  totalPrice100?: number;
+  /** 100% 약품 환자분 */
+  userPrice100?: number;
+
+  // ── [NEW] 자동차보험 할증 ─────────────────────────────────────────────────
+  /** 자동차보험 할증액 — auto-insurance.ts */
+  premium?: number;
+
+  // ── [NEW] 공비 관련 ──────────────────────────────────────────────────────
+  /** 공비 상세 (302/101/102 분리 시) */
+  pubPrice2?: number;
+  /** 보훈 비급여 감면분 */
+  mpvaComm?: number;
+
+  // ── [NEW] 본인부담상한제 ──────────────────────────────────────────────────
+  /** 상한제 초과금 (공단 전환액) — safety-net.ts */
+  overUserPrice?: number;
+
+  // ── [NEW] 장려금 ─────────────────────────────────────────────────────────
+  /** 대체조제 장려금 */
+  incentive?: number;
 }
 
 /**
@@ -160,4 +275,10 @@ export interface ICalcRepository {
   getPrescDosageFee(year: number, days: number): Promise<{ sugaCode: string; fee: number } | null>;
   /** 보험코드별 요율 조회 */
   getInsuRate(insuCode: string): Promise<InsuRate | null>;
+
+  // ── [NEW] 확장 메서드 ──────────────────────────────────────────────────────
+  /** 명절 여부 조회 — seasonal.ts (옵션, 구현 안 해도 됨) */
+  getHolidayType?(date: string): Promise<'lunar_new_year' | 'chuseok' | 'holiday' | null>;
+  /** MediIllnessInfo 조회 — exemption.ts (옵션, 구현 안 해도 됨) */
+  getMediIllnessInfo?(code: string): Promise<MediIllnessInfo | null>;
 }
