@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Calculator, BookOpen, HelpCircle } from 'lucide-react';
+import { Calculator, BookOpen, HelpCircle, Calendar } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 
 interface NavLink {
@@ -20,6 +20,7 @@ const iconMap: Record<string, React.ElementType> = {
   '/calculator': Calculator,
   '/learn': BookOpen,
   '/quiz': HelpCircle,
+  '/daily': Calendar,
 };
 
 function MobileNav({ isOpen, links, currentPath, onClose, id }: MobileNavProps) {

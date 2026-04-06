@@ -48,6 +48,24 @@ export async function getQuestionCount(): Promise<number> {
 }
 
 /**
+ * 챕터별 문제 수 조회 (서버 컴포넌트용)
+ * @param chapterNumber - 'CH01' 형식의 챕터 번호
+ */
+export async function getChapterQuestionCount(chapterNumber: string): Promise<number> {
+  const supabase = await createServerSupabase();
+  const { count, error } = await supabase
+    .from('quiz_question')
+    .select('*', { count: 'exact', head: true })
+    .eq('chapter', chapterNumber);
+
+  if (error) {
+    console.error('[quiz/client] getChapterQuestionCount error:', error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+/**
  * 조건별 문제 조회 (서버 컴포넌트용)
  * @param chapter - 챕터 필터 ('CH01' 등). undefined이면 전체
  * @param difficulty - 난이도 필터. undefined이면 전체

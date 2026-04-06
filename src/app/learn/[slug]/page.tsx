@@ -14,6 +14,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ChapterVisitMarker } from '../_components/ProgressTracker';
+import { ChapterQuizLinkServer } from '@/components/learn/ChapterQuizLinkServer';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -53,6 +54,10 @@ export default async function ChapterPage({ params }: PageProps) {
   const htmlContent = await markdownToHtml(markdown);
   const prevChapter = getPrevChapter(chapter.order);
   const nextChapter = getNextChapter(chapter.order);
+
+  // slug 앞부분(ch00, ch01 …)을 대문자 챕터 번호(CH00, CH01 …)로 변환
+  // 예) 'ch01-약품금액' → split('-')[0] → 'ch01' → toUpperCase() → 'CH01'
+  const chapterNumber = slug.split('-')[0].toUpperCase();
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -118,6 +123,9 @@ export default async function ChapterPage({ params }: PageProps) {
         ].join(' ')}
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
+
+      {/* 챕터 퀴즈 연결 */}
+      <ChapterQuizLinkServer chapterNumber={chapterNumber} />
 
       {/* 이전/다음 챕터 네비게이션 */}
       <div className="mt-8 grid grid-cols-2 gap-4">

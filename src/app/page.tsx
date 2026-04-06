@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Calculator, BookOpen, HelpCircle, Pill } from "lucide-react";
+import { Calculator, BookOpen, ClipboardList, Calendar, Pill } from "lucide-react";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { DailyStatusBanner } from "@/components/home/DailyStatusBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -86,13 +87,14 @@ async function checkConnection() {
   }
 }
 
-// ─── 3대 기능 카드 정의 ─────────────────────────────────────────────────────
+// ─── 4대 기능 카드 정의 ─────────────────────────────────────────────────────
 
 interface FeatureCard {
   href: string;
   icon: React.ElementType;
   title: string;
   description: string;
+  hint: string;
   badge: string;
   badgeVariant: "primary" | "success" | "warning" | "info";
   cta: string;
@@ -103,8 +105,8 @@ const features: FeatureCard[] = [
     href: "/calculator",
     icon: Calculator,
     title: "조제료 계산기",
-    description:
-      "처방전 정보를 입력하면 청구액·환자부담금·공단부담금을 단계별로 산출합니다. 건강보험, 의료급여, 비급여까지 지원.",
+    description: "정밀한 약제비 계산 시뮬레이터",
+    hint: "건강보험·의료급여·비급여 지원",
     badge: "계산기",
     badgeVariant: "primary",
     cta: "계산 시작하기",
@@ -113,21 +115,31 @@ const features: FeatureCard[] = [
     href: "/learn",
     icon: BookOpen,
     title: "단계별 학습",
-    description:
-      "조제료 9단계 수가 체계부터 가산 조건, 본인부담율까지 — 13개 챕터로 구성된 체계적인 교육 콘텐츠.",
+    description: "13개 챕터로 배우는 기초부터 실무까지",
+    hint: "수가 체계·가산 조건·본인부담율",
     badge: "학습",
     badgeVariant: "success",
     cta: "학습 시작하기",
   },
   {
     href: "/quiz",
-    icon: HelpCircle,
+    icon: ClipboardList,
     title: "퀴즈",
-    description:
-      "매일 1문제씩 약제비 계산 관련 퀴즈로 복습하세요. 챕터별 필터링과 난이도 선택으로 맞춤 학습이 가능합니다.",
+    description: "100문제로 실력 테스트",
+    hint: "챕터별 필터·난이도 선택 지원",
     badge: "퀴즈",
     badgeVariant: "warning",
     cta: "퀴즈 풀기",
+  },
+  {
+    href: "/daily",
+    icon: Calendar,
+    title: "데일리 챌린지",
+    description: "매일 1문제로 꾸준히 학습",
+    hint: "스트릭·통계로 학습 습관 형성",
+    badge: "데일리",
+    badgeVariant: "info",
+    cta: "오늘 문제 풀기",
   },
 ];
 
@@ -154,7 +166,7 @@ export default async function Home() {
               <p className="text-lg sm:text-xl text-text-secondary max-w-2xl leading-relaxed">
                 약국 약제비 계산의 복잡한 규칙을 누구나 스스로 배울 수 있도록,
                 <br className="hidden sm:block" />
-                시뮬레이션·단계별 학습·퀴즈를 하나의 플랫폼에 통합했습니다.
+                시뮬레이션·단계별 학습·퀴즈·데일리 챌린지를 하나의 플랫폼에 통합했습니다.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -175,18 +187,24 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── 기능 카드 3개 ── */}
+      {/* ── 4대 핵심 기능 카드 ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-text-primary">
-            3대 핵심 기능
+            4대 핵심 기능
           </h2>
           <p className="mt-2 text-text-secondary text-sm sm:text-base">
-            건강보험 약제비를 정확하게 이해하고 계산할 수 있는 도구
+            학습 → 연습 → 테스트 → 꾸준히
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* 오늘 할 일 배너 */}
+        <div className="mb-8">
+          <DailyStatusBanner />
+        </div>
+
+        {/* 4-card grid: mobile 1열 / tablet 2x2 / desktop 4열 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
@@ -216,8 +234,11 @@ export default async function Home() {
                     <h3 className="text-lg font-semibold text-text-primary">
                       {feature.title}
                     </h3>
-                    <p className="text-sm text-text-secondary leading-relaxed">
+                    <p className="text-sm font-medium text-text-secondary leading-relaxed">
                       {feature.description}
+                    </p>
+                    <p className="text-xs text-text-muted leading-relaxed">
+                      {feature.hint}
                     </p>
                   </div>
 
