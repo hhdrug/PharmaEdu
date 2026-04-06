@@ -2,35 +2,92 @@ import { createServerSupabase } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
+type TableResult = {
+  name: string;
+  label: string;
+  count: number | null;
+  expected: number;
+  error: string | null;
+};
+
+async function checkConnection() {
+  // 환경 변수 체크
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    return {
+      envOk: false,
+      envError: `환경 변수 누락: URL=${!!url}, KEY=${!!key}`,
+      tables: [] as TableResult[],
+      sample: null,
+      sampleError: null as string | null,
+    };
+  }
+
+  try {
+    const supabase = await createServerSupabase();
+
+    const tableSpecs: { name: string; label: string; expected: number }[] = [
+      { name: "suga_fee", label: "수가 단가", expected: 568 },
+      { name: "fee_base_params", label: "기본 파라미터", expected: 3 },
+      { name: "insu_rate", label: "보험요율", expected: 18 },
+      { name: "holiday", label: "공휴일", expected: 53 },
+      { name: "presc_dosage_fee", label: "투약일수 조제료", expected: 50 },
+    ];
+
+    const tables: TableResult[] = await Promise.all(
+      tableSpecs.map(async (spec) => {
+        try {
+          const { count, error } = await supabase
+            .from(spec.name)
+            .select("*", { count: "exact", head: true });
+          return {
+            ...spec,
+            count: count ?? null,
+            error: error?.message ?? null,
+          };
+        } catch (e) {
+          return {
+            ...spec,
+            count: null,
+            error: e instanceof Error ? e.message : String(e),
+          };
+        }
+      })
+    );
+
+    const { data: sample, error: sampleError } = await supabase
+      .from("suga_fee")
+      .select("code, name, price")
+      .eq("apply_year", 2026)
+      .eq("code", "Z1000")
+      .maybeSingle();
+
+    return {
+      envOk: true,
+      envError: null,
+      tables,
+      sample,
+      sampleError: sampleError?.message ?? null,
+    };
+  } catch (e) {
+    return {
+      envOk: true,
+      envError: e instanceof Error ? e.message : String(e),
+      tables: [] as TableResult[],
+      sample: null,
+      sampleError: null,
+    };
+  }
+}
+
 export default async function Home() {
-  const supabase = await createServerSupabase();
-
-  // 각 테이블의 행 수 조회
-  const [sugaRes, feeRes, insuRes, holidayRes, dosageRes] = await Promise.all([
-    supabase.from("suga_fee").select("*", { count: "exact", head: true }),
-    supabase.from("fee_base_params").select("*", { count: "exact", head: true }),
-    supabase.from("insu_rate").select("*", { count: "exact", head: true }),
-    supabase.from("holiday").select("*", { count: "exact", head: true }),
-    supabase.from("presc_dosage_fee").select("*", { count: "exact", head: true }),
-  ]);
-
-  // 샘플: 2026년 Z1000 조회
-  const { data: sample } = await supabase
-    .from("suga_fee")
-    .select("code, name, price")
-    .eq("apply_year", 2026)
-    .eq("code", "Z1000")
-    .single();
-
-  const tables = [
-    { name: "suga_fee", label: "수가 단가", count: sugaRes.count, expected: 568 },
-    { name: "fee_base_params", label: "기본 파라미터", count: feeRes.count, expected: 3 },
-    { name: "insu_rate", label: "보험요율", count: insuRes.count, expected: 18 },
-    { name: "holiday", label: "공휴일", count: holidayRes.count, expected: 53 },
-    { name: "presc_dosage_fee", label: "투약일수 조제료", count: dosageRes.count, expected: 50 },
-  ];
-
-  const allOk = tables.every((t) => t.count === t.expected);
+  const result = await checkConnection();
+  const allOk =
+    result.envOk &&
+    result.tables.length > 0 &&
+    result.tables.every((t) => t.count === t.expected && !t.error);
 
   return (
     <main className="min-h-screen p-8">
@@ -47,46 +104,94 @@ export default async function Home() {
             </span>
             Supabase 연결 상태
           </h2>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-slate-500">
-                <th className="py-2">테이블</th>
-                <th className="py-2">설명</th>
-                <th className="py-2 text-right">실제</th>
-                <th className="py-2 text-right">예상</th>
-                <th className="py-2 text-right">상태</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tables.map((t) => (
-                <tr key={t.name} className="border-b">
-                  <td className="py-2 font-mono text-xs">{t.name}</td>
-                  <td className="py-2">{t.label}</td>
-                  <td className="py-2 text-right font-mono">{t.count ?? "—"}</td>
-                  <td className="py-2 text-right font-mono text-slate-400">{t.expected}</td>
-                  <td className="py-2 text-right">
-                    {t.count === t.expected ? (
-                      <span className="text-green-600">OK</span>
-                    ) : (
-                      <span className="text-red-600">FAIL</span>
-                    )}
-                  </td>
+
+          {!result.envOk && (
+            <div className="bg-red-50 border border-red-200 rounded p-4 text-sm text-red-700 mb-4">
+              <strong>환경 변수 오류:</strong> {result.envError}
+            </div>
+          )}
+
+          {result.envOk && result.envError && (
+            <div className="bg-red-50 border border-red-200 rounded p-4 text-sm text-red-700 mb-4">
+              <strong>연결 오류:</strong> {result.envError}
+            </div>
+          )}
+
+          {result.tables.length > 0 && (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-slate-500">
+                  <th className="py-2">테이블</th>
+                  <th className="py-2">설명</th>
+                  <th className="py-2 text-right">실제</th>
+                  <th className="py-2 text-right">예상</th>
+                  <th className="py-2 text-right">상태</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {result.tables.map((t) => (
+                  <tr key={t.name} className="border-b">
+                    <td className="py-2 font-mono text-xs">{t.name}</td>
+                    <td className="py-2">{t.label}</td>
+                    <td className="py-2 text-right font-mono">{t.count ?? "—"}</td>
+                    <td className="py-2 text-right font-mono text-slate-400">
+                      {t.expected}
+                    </td>
+                    <td className="py-2 text-right">
+                      {t.error ? (
+                        <span className="text-red-600" title={t.error}>
+                          ERR
+                        </span>
+                      ) : t.count === t.expected ? (
+                        <span className="text-green-600">OK</span>
+                      ) : (
+                        <span className="text-red-600">FAIL</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {result.tables.some((t) => t.error) && (
+            <div className="mt-4 bg-red-50 border border-red-200 rounded p-4 text-xs text-red-700">
+              <strong>테이블별 오류:</strong>
+              <ul className="mt-2 space-y-1">
+                {result.tables
+                  .filter((t) => t.error)
+                  .map((t) => (
+                    <li key={t.name}>
+                      <span className="font-mono">{t.name}</span>: {t.error}
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          )}
         </section>
 
-        {sample && (
+        {result.sample && (
           <section className="bg-white rounded-xl shadow-sm border p-6">
             <h2 className="text-xl font-bold mb-4">샘플 조회</h2>
             <p className="text-sm text-slate-500 mb-2">2026년 Z1000 (약국관리료)</p>
             <div className="bg-slate-50 rounded p-4 font-mono text-sm">
-              <div>code: <strong>{sample.code}</strong></div>
-              <div>name: <strong>{sample.name}</strong></div>
-              <div>price: <strong>{sample.price}원</strong></div>
+              <div>
+                code: <strong>{result.sample.code}</strong>
+              </div>
+              <div>
+                name: <strong>{result.sample.name}</strong>
+              </div>
+              <div>
+                price: <strong>{result.sample.price}원</strong>
+              </div>
             </div>
           </section>
+        )}
+
+        {result.sampleError && (
+          <div className="bg-red-50 border border-red-200 rounded p-4 text-sm text-red-700">
+            <strong>샘플 조회 오류:</strong> {result.sampleError}
+          </div>
         )}
 
         <section className="grid grid-cols-3 gap-4">
