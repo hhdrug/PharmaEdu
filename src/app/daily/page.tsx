@@ -57,7 +57,7 @@ export default async function DailyPage() {
             </p>
           </>
         ) : (
-          <p className="text-text-muted text-sm">문제를 불러올 수 없습니다.</p>
+          <p className="text-text-secondary text-sm">문제를 불러올 수 없습니다.</p>
         )}
 
         <Link href="/daily/play" className="block">

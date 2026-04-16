@@ -26,6 +26,7 @@ import { DIFFICULTY_LABEL, DIFFICULTY_VARIANT } from '@/lib/quiz/types';
 import { formatRelativeTime } from '@/lib/quiz/history';
 import { getRecommendationsForWrongAnswer } from '@/lib/learning/cross-refs';
 import { FlaskConical } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 
 // ── 상수 ─────────────────────────────────────────────────────
 
@@ -233,6 +234,7 @@ function RecommendationsSection({ entry }: { entry: WrongAnswerEntry }) {
 // ── 메인 페이지 ───────────────────────────────────────────────
 
 export default function WrongNotesPage() {
+  const toast = useToast();
   // null = 아직 마운트 전(SSR 하이드레이션 불일치 방지)
   const [allEntries, setAllEntries] = useState<WrongAnswerEntry[] | null>(null);
   const [chapterFilter, setChapterFilter] = useState<string>('ALL');
@@ -280,7 +282,8 @@ export default function WrongNotesPage() {
   const handleDelete = useCallback((id: number) => {
     deleteWrongAnswer(id);
     setAllEntries(getWrongAnswers());
-  }, []);
+    toast.show({ variant: 'info', message: '오답 노트에서 삭제되었습니다.' });
+  }, [toast]);
 
   const handleClearAll = useCallback(() => {
     if (!confirmClear) {
@@ -290,7 +293,8 @@ export default function WrongNotesPage() {
     clearWrongAnswers();
     setAllEntries([]);
     setConfirmClear(false);
-  }, [confirmClear]);
+    toast.show({ variant: 'success', message: '오답 노트를 모두 비웠습니다.' });
+  }, [confirmClear, toast]);
 
   const resetFilters = useCallback(() => {
     setChapterFilter('ALL');

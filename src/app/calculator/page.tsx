@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
+import { useToast } from '@/components/ui/Toast';
 import type { CalcResult, DrugItem } from '@/lib/calc-engine';
 import { SCENARIOS, SCENARIO_GROUPS } from '@/components/calculator/scenarios';
 import DrugTable, { type DrugRow, defaultDrugRow, nextDrugId } from '@/components/calculator/DrugTable';
@@ -103,6 +104,7 @@ const SPECIAL_PUB_OPTIONS = [
 // ─── 메인 컴포넌트 ─────────────────────────────────────────────────────
 
 export default function CalculatorPage() {
+  const toast = useToast();
 
   // ── 기본 입력 ──
   const [dosDate, setDosDate] = useState(() => new Date().toISOString().substring(0, 10));
@@ -270,12 +272,20 @@ export default function CalculatorPage() {
       const data = (await res.json()) as CalcResult & { error?: string };
 
       if (!res.ok || data.error) {
-        setError(data.error ?? '계산 중 오류가 발생했습니다.');
+        const msg = data.error ?? '계산 중 오류가 발생했습니다.';
+        setError(msg);
+        toast.show({ variant: 'error', message: msg });
       } else {
         setResult(data);
+        toast.show({
+          variant: 'success',
+          message: `계산 완료 — 총액1 ${data.totalPrice.toLocaleString()}원`,
+        });
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : '네트워크 오류');
+      const msg = e instanceof Error ? e.message : '네트워크 오류';
+      setError(msg);
+      toast.show({ variant: 'error', message: msg });
     } finally {
       setLoading(false);
     }
@@ -285,6 +295,7 @@ export default function CalculatorPage() {
     isDirectDispensing, isNonFace, hasCounseling, isDalbitPharmacy,
     mediIllness, mediIllnessB,
     selfInjYN, mt038, nPayRoundType, specialPub, isChadungExempt,
+    toast,
   ]);
 
   // ── URL query ?scenario=S01 자동 적용 (Phase 4C) ──

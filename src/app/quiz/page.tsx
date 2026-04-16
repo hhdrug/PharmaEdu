@@ -63,7 +63,7 @@ export default async function QuizHomePage() {
           </Link>
         ) : (
           <Card variant="outlined" className="text-center py-8">
-            <p className="text-text-muted text-sm">문제를 불러올 수 없습니다.</p>
+            <p className="text-text-secondary text-sm">문제를 불러올 수 없습니다.</p>
           </Card>
         )}
       </section>
@@ -121,8 +121,8 @@ export default async function QuizHomePage() {
         <h2 className="text-lg font-semibold text-text-primary mb-3">카테고리별 퀴즈</h2>
         {categories.length === 0 ? (
           <Card variant="outlined" className="text-center py-10">
-            <p className="text-text-muted text-sm">카테고리를 불러올 수 없습니다.</p>
-            <p className="text-text-muted text-xs mt-1">
+            <p className="text-text-secondary text-sm">카테고리를 불러올 수 없습니다.</p>
+            <p className="text-text-secondary text-xs mt-1">
               Supabase SQL Editor에서 seed_quiz.sql을 실행해주세요.
             </p>
           </Card>

@@ -424,7 +424,7 @@ export default function DynamicQuizPage() {
 
       {/* 아직 문제 없을 때 안내 */}
       {!question && !loading && !error && (
-        <div className="text-center py-12 text-text-muted text-sm">
+        <div className="text-center py-12 text-text-secondary text-sm">
           난이도를 선택하고 <strong>문제 생성하기</strong>를 눌러주세요.
         </div>
       )}
