@@ -69,3 +69,48 @@ export const DIFFICULTY_VARIANT: Record<1 | 2 | 3, 'success' | 'warning' | 'erro
   2: 'warning',
   3: 'error',
 };
+
+// ── tags 규약 헬퍼 ────────────────────────────────────────────
+//
+// tags 배열에 관습적 prefix를 사용하여 DB 스키마 변경 없이 교차 참조를 지원한다.
+//   - 'lesson:lesson-03-drug-amount-basics'
+//   - 'scenario:S01'
+//   - 'chapter:CH01' (DB 컬럼 `chapter`와 병기 — 일관성 및 helper 간결화)
+//
+// 일반 주제 태그('약품금액', '계산공식' 등)는 그대로 유지.
+
+const TAG_PREFIX = {
+  lesson: 'lesson:',
+  scenario: 'scenario:',
+  chapter: 'chapter:',
+} as const;
+
+function extractTagValues(tags: string[] | null | undefined, prefix: string): string[] {
+  if (!tags) return [];
+  return tags
+    .filter((t) => t.startsWith(prefix))
+    .map((t) => t.slice(prefix.length));
+}
+
+/** 문제와 연결된 Lesson slug 목록을 반환한다. */
+export function getRelatedLessons(q: QuizQuestion): string[] {
+  return extractTagValues(q.tags, TAG_PREFIX.lesson);
+}
+
+/** 문제와 연결된 Scenario id 목록을 반환한다. */
+export function getRelatedScenarios(q: QuizQuestion): string[] {
+  return extractTagValues(q.tags, TAG_PREFIX.scenario);
+}
+
+/** 문제의 tags에서 chapter prefix를 추출한다 (없으면 chapter 컬럼 반환). */
+export function getChapterFromTags(q: QuizQuestion): string {
+  const fromTags = extractTagValues(q.tags, TAG_PREFIX.chapter);
+  return fromTags[0] ?? q.chapter;
+}
+
+/** 일반 주제 태그(prefix 없는)만 반환한다. */
+export function getTopicTags(q: QuizQuestion): string[] {
+  if (!q.tags) return [];
+  const prefixes = Object.values(TAG_PREFIX);
+  return q.tags.filter((t) => !prefixes.some((p) => t.startsWith(p)));
+}

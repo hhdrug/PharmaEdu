@@ -8,6 +8,10 @@ export type ChapterMeta = {
   difficulty: Difficulty;
   estimatedMinutes: number;
   order: number;
+  /** 이 챕터가 다루는 주제의 Lesson slug 목록 (학습 경로 안내용) */
+  relatedLessons?: string[];
+  /** 이 챕터의 계산 원리를 실습할 수 있는 Calculator 시나리오 id 목록 */
+  relatedScenarios?: string[];
 };
 
 export const CHAPTERS: ChapterMeta[] = [
@@ -19,6 +23,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '입문',
     estimatedMinutes: 15,
     order: 0,
+    relatedLessons: ['lesson-02-prescription-components'],
+    relatedScenarios: ['S01'],
   },
   {
     slug: 'ch01-약품금액',
@@ -28,6 +34,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '기초',
     estimatedMinutes: 20,
     order: 1,
+    relatedLessons: ['lesson-03-drug-amount-basics'],
+    relatedScenarios: ['S01', 'S02', 'S03', 'S05'],
   },
   {
     slug: 'ch02-조제료코드',
@@ -37,6 +45,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '기초',
     estimatedMinutes: 25,
     order: 2,
+    relatedLessons: ['lesson-04-dispensing-fees'],
+    relatedScenarios: ['S01', 'S02', 'S08'],
   },
   {
     slug: 'ch03-수가계산',
@@ -46,6 +56,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '중급',
     estimatedMinutes: 35,
     order: 3,
+    relatedLessons: ['lesson-04-dispensing-fees'],
+    relatedScenarios: ['S01', 'S04', 'S13'],
   },
   {
     slug: 'ch04-가산로직',
@@ -55,6 +67,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '중급',
     estimatedMinutes: 30,
     order: 4,
+    relatedLessons: ['lesson-05-surcharge-rules'],
+    relatedScenarios: ['S08', 'S14', 'S15', 'S19'],
   },
   {
     slug: 'ch05-본인부담금',
@@ -64,6 +78,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '중급',
     estimatedMinutes: 40,
     order: 5,
+    relatedLessons: ['lesson-06-copayment', 'lesson-07-insurance-types'],
+    relatedScenarios: ['S01', 'S04', 'S05', 'S06', 'S09', 'S10', 'S16'],
   },
   {
     slug: 'ch06-3자배분',
@@ -73,6 +89,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '중급',
     estimatedMinutes: 30,
     order: 6,
+    relatedLessons: ['lesson-06-copayment', 'lesson-07-insurance-types'],
+    relatedScenarios: ['S07', 'S12', 'S15'],
   },
   {
     slug: 'ch07-반올림절사',
@@ -82,6 +100,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '기초',
     estimatedMinutes: 20,
     order: 7,
+    relatedLessons: ['lesson-08-rounding-precision'],
+    relatedScenarios: ['S01', 'S05', 'S06'],
   },
   {
     slug: 'ch08-특수케이스',
@@ -91,6 +111,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '심화',
     estimatedMinutes: 35,
     order: 8,
+    relatedLessons: ['lesson-09-special-cases'],
+    relatedScenarios: ['S13', 'S14', 'S17', 'S18', 'S19'],
   },
   {
     slug: 'ch09-데이터모델',
@@ -100,6 +122,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '중급',
     estimatedMinutes: 30,
     order: 9,
+    relatedLessons: ['lesson-02-prescription-components'],
+    relatedScenarios: ['S01'],
   },
   {
     slug: 'ch10-계산파이프라인',
@@ -109,6 +133,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '심화',
     estimatedMinutes: 40,
     order: 10,
+    relatedLessons: ['lesson-10-integrated-practice'],
+    relatedScenarios: ['S01', 'S06', 'S12'],
   },
   {
     slug: 'ch11-테스트시나리오',
@@ -118,6 +144,8 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '심화',
     estimatedMinutes: 45,
     order: 11,
+    relatedLessons: ['lesson-10-integrated-practice'],
+    relatedScenarios: ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13', 'S14', 'S15', 'S16', 'S17', 'S18', 'S19'],
   },
   {
     slug: 'ch12-보훈약국',
@@ -127,11 +155,17 @@ export const CHAPTERS: ChapterMeta[] = [
     difficulty: '심화',
     estimatedMinutes: 35,
     order: 12,
+    relatedLessons: ['lesson-07-insurance-types', 'lesson-09-special-cases'],
+    relatedScenarios: ['S07', 'S12', 'S15'],
   },
 ];
 
 export function getChapterBySlug(slug: string): ChapterMeta | undefined {
   return CHAPTERS.find((ch) => ch.slug === slug);
+}
+
+export function getChapterByNumber(number: string): ChapterMeta | undefined {
+  return CHAPTERS.find((ch) => ch.number === number);
 }
 
 export function getPrevChapter(order: number): ChapterMeta | undefined {

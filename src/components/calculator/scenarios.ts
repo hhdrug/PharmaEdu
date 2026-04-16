@@ -23,6 +23,13 @@ export interface ScenarioPreset {
   isDalbitPharmacy: boolean;
   isPowder: boolean;   // powderYn="Y" 여부 (UI 전용)
   drugs: Omit<DrugItem, 'pack'>[];
+  /** 이 시나리오가 검증/실습하는 Chapter 번호 목록 ('CH01' 등) */
+  relatedChapters?: string[];
+  /** 학습 경로 — 계산 단계별로 어떤 개념을 다루는지 설명 */
+  learningPath?: Array<{
+    chapter: string;
+    concept: string;
+  }>;
 }
 
 export const SCENARIOS: ScenarioPreset[] = [
@@ -38,6 +45,14 @@ export const SCENARIOS: ScenarioPreset[] = [
     drugs: [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 500, dose: 1, dNum: 3, dDay: 3, isPowder: undefined, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 300, dose: 1, dNum: 3, dDay: 3, isPowder: undefined, insuDrug: true },
+    ],
+    relatedChapters: ['CH01', 'CH02', 'CH03', 'CH05', 'CH07'],
+    learningPath: [
+      { chapter: 'CH01', concept: '약품금액 기본 공식' },
+      { chapter: 'CH02', concept: 'Z코드 선택 (3일차)' },
+      { chapter: 'CH03', concept: '조제료 합계 계산' },
+      { chapter: 'CH05', concept: 'C10 30% 본인부담' },
+      { chapter: 'CH07', concept: '각 단계 반올림 적용' },
     ],
   },
 
@@ -55,6 +70,12 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 450, dose: 1, dNum: 3, dDay: 7, insuDrug: true },
       { code: '670400020', insuPay: 'covered', take: 'external', price: 1200, dose: 1, dNum: 1, dDay: 7, insuDrug: true },
     ],
+    relatedChapters: ['CH01', 'CH02', 'CH03'],
+    learningPath: [
+      { chapter: 'CH01', concept: '외용제 금액 산출' },
+      { chapter: 'CH02', concept: '내복+외용 병용 Z코드' },
+      { chapter: 'CH03', concept: '복합 처방 조제료' },
+    ],
   },
 
   // ── S03: 급여+비급여 혼합 (C10, 40세) ────────────────────────────────────
@@ -70,6 +91,11 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648901070', insuPay: 'covered',    take: 'internal', price: 500,  dose: 1, dNum: 3, dDay: 5, insuDrug: true  },
       { code: '999900001', insuPay: 'nonCovered', take: 'internal', price: 3000, dose: 1, dNum: 1, dDay: 5, insuDrug: false },
     ],
+    relatedChapters: ['CH01', 'CH05'],
+    learningPath: [
+      { chapter: 'CH01', concept: '급여/비급여 약품 분리' },
+      { chapter: 'CH05', concept: 'W항(비급여) 본인 전액' },
+    ],
   },
 
   // ── S04: 65세 이상 저액 정액 (C10, 72세) ─────────────────────────────────
@@ -83,6 +109,11 @@ export const SCENARIOS: ScenarioPreset[] = [
     isDirectDispensing: false, isDalbitPharmacy: false, isPowder: false,
     drugs: [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 200, dose: 1, dNum: 2, dDay: 3, insuDrug: true },
+    ],
+    relatedChapters: ['CH03', 'CH05', 'CH08'],
+    learningPath: [
+      { chapter: 'CH05', concept: '65세 이상 저액 정액 분기' },
+      { chapter: 'CH08', concept: '10,000원 이하 특수 규칙' },
     ],
   },
 
@@ -99,6 +130,12 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 400, dose: 0.5, dNum: 3, dDay: 3, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 300, dose: 0.5, dNum: 3, dDay: 3, insuDrug: true },
     ],
+    relatedChapters: ['CH01', 'CH04', 'CH05', 'CH07'],
+    learningPath: [
+      { chapter: 'CH01', concept: '소수점 투약량 (0.5정) 계산' },
+      { chapter: 'CH04', concept: '6세미만 가산 자동 적용' },
+      { chapter: 'CH05', concept: '21% 감경 본인부담' },
+    ],
   },
 
   // ── S06: 의료급여 1종 (D10, 55세) ────────────────────────────────────────
@@ -113,6 +150,11 @@ export const SCENARIOS: ScenarioPreset[] = [
     drugs: [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 600, dose: 1, dNum: 3, dDay: 5, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 350, dose: 1, dNum: 3, dDay: 5, insuDrug: true },
+    ],
+    relatedChapters: ['CH05', 'CH07'],
+    learningPath: [
+      { chapter: 'CH05', concept: '의료급여 1종 정액 본인부담' },
+      { chapter: 'CH07', concept: 'Trunc10 총액1 산출' },
     ],
   },
 
@@ -129,6 +171,11 @@ export const SCENARIOS: ScenarioPreset[] = [
     drugs: [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 800, dose: 1, dNum: 3, dDay: 7, insuDrug: true },
     ],
+    relatedChapters: ['CH06', 'CH12'],
+    learningPath: [
+      { chapter: 'CH12', concept: 'M10 전액면제 코드' },
+      { chapter: 'CH06', concept: '3자배분 — 환자 0원, 보훈 전액' },
+    ],
   },
 
   // ── S08: 야간+토요 가산 (C10, 45세) ──────────────────────────────────────
@@ -144,6 +191,11 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 500, dose: 1, dNum: 3, dDay: 3, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 300, dose: 1, dNum: 3, dDay: 3, insuDrug: true },
     ],
+    relatedChapters: ['CH02', 'CH04'],
+    learningPath: [
+      { chapter: 'CH04', concept: '야간+토요 중복 가산 우선순위' },
+      { chapter: 'CH02', concept: 'Z코드 접미사 010/030' },
+    ],
   },
 
   // ── S09: 산재 요양급여 (E10, 40세) ───────────────────────────────────────
@@ -158,6 +210,10 @@ export const SCENARIOS: ScenarioPreset[] = [
     drugs: [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 500, dose: 1, dNum: 3, dDay: 5, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 300, dose: 1, dNum: 3, dDay: 5, insuDrug: true },
+    ],
+    relatedChapters: ['CH05'],
+    learningPath: [
+      { chapter: 'CH05', concept: '산재 E10 — 환자부담 0원' },
     ],
   },
 
@@ -175,6 +231,10 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 450, dose: 1, dNum: 3, dDay: 7, insuDrug: true },
       { code: '648903090', insuPay: 'covered', take: 'internal', price: 300, dose: 1, dNum: 3, dDay: 7, insuDrug: true },
     ],
+    relatedChapters: ['CH05'],
+    learningPath: [
+      { chapter: 'CH05', concept: '자동차보험 F10 — 전액 본인부담' },
+    ],
   },
 
   // ── S11: 산재 후유증 (E20, 50세) ─────────────────────────────────────────
@@ -188,6 +248,10 @@ export const SCENARIOS: ScenarioPreset[] = [
     isDirectDispensing: false, isDalbitPharmacy: false, isPowder: false,
     drugs: [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 600, dose: 1, dNum: 3, dDay: 3, insuDrug: true },
+    ],
+    relatedChapters: ['CH05'],
+    learningPath: [
+      { chapter: 'CH05', concept: '산재 E20 후유증 — 환자부담 0원' },
     ],
   },
 
@@ -205,6 +269,11 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 800, dose: 1, dNum: 3, dDay: 7, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 350, dose: 1, dNum: 3, dDay: 7, insuDrug: true },
     ],
+    relatedChapters: ['CH06', 'CH12'],
+    learningPath: [
+      { chapter: 'CH12', concept: '보훈위탁 G20 — 병원 감면' },
+      { chapter: 'CH06', concept: '3자배분 (환자/공단/보훈)' },
+    ],
   },
 
   // ── S13: 직접조제 (C10, 45세) ─────────────────────────────────────────────
@@ -220,6 +289,11 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 500, dose: 1, dNum: 3, dDay: 3, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 300, dose: 1, dNum: 3, dDay: 3, insuDrug: true },
     ],
+    relatedChapters: ['CH02', 'CH08'],
+    learningPath: [
+      { chapter: 'CH08', concept: '직접조제 특수 분기' },
+      { chapter: 'CH02', concept: 'Z4200 직접조제 코드' },
+    ],
   },
 
   // ── S14: 달빛어린이 (C10, 5세, 야간) ─────────────────────────────────────
@@ -234,6 +308,11 @@ export const SCENARIOS: ScenarioPreset[] = [
     drugs: [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 400, dose: 0.5, dNum: 3, dDay: 3, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 300, dose: 0.5, dNum: 3, dDay: 3, insuDrug: true },
+    ],
+    relatedChapters: ['CH04', 'CH08'],
+    learningPath: [
+      { chapter: 'CH04', concept: '6세미만+야간+달빛 복합 가산' },
+      { chapter: 'CH08', concept: 'Z7001 달빛어린이 특수 코드' },
     ],
   },
 
@@ -251,6 +330,12 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 800, dose: 1, dNum: 3, dDay: 7, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 350, dose: 1, dNum: 3, dDay: 7, insuDrug: true },
     ],
+    relatedChapters: ['CH04', 'CH06', 'CH12'],
+    learningPath: [
+      { chapter: 'CH12', concept: 'M60 60% 감면 코드' },
+      { chapter: 'CH06', concept: '감면율이 적용된 3자배분' },
+      { chapter: 'CH04', concept: '보훈+야간 중복 가산' },
+    ],
   },
 
   // ── S16: 의료급여 2종+65세 (D20, 70세) ───────────────────────────────────
@@ -264,6 +349,10 @@ export const SCENARIOS: ScenarioPreset[] = [
     isDirectDispensing: false, isDalbitPharmacy: false, isPowder: false,
     drugs: [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 500, dose: 1, dNum: 3, dDay: 3, insuDrug: true },
+    ],
+    relatedChapters: ['CH05'],
+    learningPath: [
+      { chapter: 'CH05', concept: 'D20 의료급여 2종 — 정액/정률 분기' },
     ],
   },
 
@@ -281,6 +370,11 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 600, dose: 1, dNum: 3, dDay: 5, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 350, dose: 1, dNum: 3, dDay: 5, insuDrug: true },
     ],
+    relatedChapters: ['CH05', 'CH08'],
+    learningPath: [
+      { chapter: 'CH08', concept: 'sbrdnType B014 특수 분기' },
+      { chapter: 'CH05', concept: '의료급여 30% 정률 적용' },
+    ],
   },
 
   // ── S18: 행려 8종 D80 (D80, 40세) ────────────────────────────────────────
@@ -296,6 +390,11 @@ export const SCENARIOS: ScenarioPreset[] = [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 500, dose: 1, dNum: 3, dDay: 3, insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 300, dose: 1, dNum: 3, dDay: 3, insuDrug: true },
     ],
+    relatedChapters: ['CH05', 'CH08'],
+    learningPath: [
+      { chapter: 'CH08', concept: '행려 D80 특수 코드' },
+      { chapter: 'CH05', concept: '행려 전액면제' },
+    ],
   },
 
   // ── S19: 산제 가루약 ATB (C10, 8세) ──────────────────────────────────────
@@ -310,6 +409,11 @@ export const SCENARIOS: ScenarioPreset[] = [
     drugs: [
       { code: '648901070', insuPay: 'covered', take: 'internal', price: 600, dose: 1, dNum: 3, dDay: 3, isPowder: '1', insuDrug: true },
       { code: '648902080', insuPay: 'covered', take: 'internal', price: 400, dose: 1, dNum: 3, dDay: 3, isPowder: '1', insuDrug: true },
+    ],
+    relatedChapters: ['CH02', 'CH04'],
+    learningPath: [
+      { chapter: 'CH04', concept: '산제 가산 1순위 (다른 가산 배제)' },
+      { chapter: 'CH02', concept: 'Z4010 산제 가산 별도 행' },
     ],
   },
 ];
@@ -337,3 +441,13 @@ export const SCENARIO_GROUPS = [
     ids: ['S13', 'S14', 'S19'],
   },
 ];
+
+/** id로 시나리오 조회 */
+export function getScenarioById(id: string): ScenarioPreset | undefined {
+  return SCENARIOS.find((s) => s.id === id);
+}
+
+/** 특정 chapter를 다루는 시나리오 목록 */
+export function getScenariosByChapter(chapter: string): ScenarioPreset[] {
+  return SCENARIOS.filter((s) => s.relatedChapters?.includes(chapter));
+}
