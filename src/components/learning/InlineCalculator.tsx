@@ -244,6 +244,83 @@ const PRESETS: Record<string, PresetConfig> = {
     }),
     displayFields: ['drugAmount', 'dispensingFee', 'totalPrice', 'userPrice', 'pubPrice', 'steps', 'wageList'],
   },
+
+  /** 7. S06 — 의료급여 1종 (D10) */
+  'scenario-s06': {
+    title: 'S06 — 의료급여 1종 (D10) 5일 처방',
+    description: 'D10, 55세, 내복약 2종 5일. 의료급여 1종 본인부담 방식 확인.',
+    fields: [
+      { key: 'age',    label: '환자 나이', type: 'number', min: 18, max: 120 },
+      { key: 'price1', label: '약품1 단가 (원)', type: 'number', min: 1, step: 10 },
+      { key: 'price2', label: '약품2 단가 (원)', type: 'number', min: 1, step: 10 },
+      { key: 'dday',   label: '투여일수', type: 'number', min: 1, max: 90 },
+    ],
+    buildOptions: (v) => ({
+      insuCode: 'D10',
+      age: Number(v.age ?? 55),
+      dosDate: todayStr(),
+      drugList: [
+        {
+          code: '648901070',
+          insuPay: 'covered',
+          take: 'internal',
+          price: Number(v.price1 ?? 600),
+          dose: 1, dNum: 3,
+          dDay: Number(v.dday ?? 5),
+          insuDrug: true,
+        } satisfies DrugItem,
+        {
+          code: '648902080',
+          insuPay: 'covered',
+          take: 'internal',
+          price: Number(v.price2 ?? 350),
+          dose: 1, dNum: 3,
+          dDay: Number(v.dday ?? 5),
+          insuDrug: true,
+        } satisfies DrugItem,
+      ],
+    }),
+    displayFields: ['drugAmount', 'dispensingFee', 'totalPrice', 'userPrice', 'pubPrice', 'steps', 'wageList'],
+  },
+
+  /** 8. S12 — 보훈위탁 G20+M10 */
+  'scenario-s12': {
+    title: 'S12 — 보훈위탁 G20+M10 7일 처방',
+    description: 'G20+M10, 75세. 보훈 전액청구 + 3자배분 확인 (환자·공단·보훈청).',
+    fields: [
+      { key: 'age',    label: '환자 나이', type: 'number', min: 20, max: 120 },
+      { key: 'price1', label: '약품1 단가 (원)', type: 'number', min: 1, step: 10 },
+      { key: 'price2', label: '약품2 단가 (원)', type: 'number', min: 1, step: 10 },
+      { key: 'dday',   label: '투여일수', type: 'number', min: 1, max: 90 },
+    ],
+    buildOptions: (v) => ({
+      insuCode: 'G20',
+      bohunCode: 'M10',
+      age: Number(v.age ?? 75),
+      dosDate: todayStr(),
+      drugList: [
+        {
+          code: '648901070',
+          insuPay: 'covered',
+          take: 'internal',
+          price: Number(v.price1 ?? 800),
+          dose: 1, dNum: 3,
+          dDay: Number(v.dday ?? 7),
+          insuDrug: true,
+        } satisfies DrugItem,
+        {
+          code: '648902080',
+          insuPay: 'covered',
+          take: 'internal',
+          price: Number(v.price2 ?? 350),
+          dose: 1, dNum: 3,
+          dDay: Number(v.dday ?? 7),
+          insuDrug: true,
+        } satisfies DrugItem,
+      ],
+    }),
+    displayFields: ['drugAmount', 'dispensingFee', 'totalPrice', 'userPrice', 'pubPrice', 'steps', 'wageList'],
+  },
 };
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────
