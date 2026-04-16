@@ -24,6 +24,8 @@ import {
 } from '@/lib/quiz/wrong-notes';
 import { DIFFICULTY_LABEL, DIFFICULTY_VARIANT } from '@/lib/quiz/types';
 import { formatRelativeTime } from '@/lib/quiz/history';
+import { getRecommendationsForWrongAnswer } from '@/lib/learning/cross-refs';
+import { FlaskConical } from 'lucide-react';
 
 // ── 상수 ─────────────────────────────────────────────────────
 
@@ -148,6 +150,9 @@ function WrongNoteCard({ entry, onDelete }: WrongNoteCardProps) {
         </div>
       )}
 
+      {/* 관련 레슨/시나리오 추천 (Phase 4A: cross-refs) */}
+      <RecommendationsSection entry={entry} />
+
       {/* 하단 액션 */}
       <div className="flex items-center justify-between pt-1">
         <Link
@@ -170,6 +175,58 @@ function WrongNoteCard({ entry, onDelete }: WrongNoteCardProps) {
         </Button>
       </div>
     </Card>
+  );
+}
+
+// ── 추천 섹션 ─────────────────────────────────────────────────
+
+function RecommendationsSection({ entry }: { entry: WrongAnswerEntry }) {
+  const { lessons, scenarios } = useMemo(
+    () => getRecommendationsForWrongAnswer(entry),
+    [entry],
+  );
+
+  if (lessons.length === 0 && scenarios.length === 0) return null;
+
+  return (
+    <div className="pt-2 border-t border-border-light space-y-2">
+      <p className="text-xs font-semibold text-text-muted uppercase tracking-wide">
+        복습 추천
+      </p>
+
+      {/* 관련 레슨 */}
+      {lessons.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          {lessons.slice(0, 2).map((l) => (
+            <Link
+              key={l.slug}
+              href={`/learn/lesson/${l.slug}`}
+              className="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 hover:underline"
+            >
+              <BookOpen className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>복습: Lesson {l.number} — {l.title}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* 관련 시나리오 */}
+      {scenarios.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          <span className="text-xs text-text-muted self-center">💡 실습:</span>
+          {scenarios.slice(0, 3).map((s) => (
+            <Link
+              key={s.id}
+              href={`/calculator?scenario=${s.id}`}
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-primary-50 text-primary-700 hover:bg-primary-100 transition-colors"
+            >
+              <FlaskConical className="w-3 h-3" />
+              {s.id}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

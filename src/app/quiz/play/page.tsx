@@ -32,6 +32,12 @@ async function loadQuestions(searchParams: Awaited<PageProps['searchParams']>): 
     return getQuestions({ limit: 10 });
   }
 
+  // 챕터 직접 필터 (Phase 4B: 레슨 → 퀴즈 추천 링크에서 사용)
+  if (searchParams.chapter) {
+    const chapter = String(searchParams.chapter);
+    return getQuestions({ chapter, limit: 10 });
+  }
+
   // 기본: 무작위 5문제
   return getRandomQuestions(5);
 }
@@ -47,6 +53,8 @@ export default async function QuizPlayPage({ searchParams }: PageProps) {
       ? `무작위 ${params.random}문제`
       : params.category
       ? '카테고리 퀴즈'
+      : params.chapter
+      ? `${params.chapter} 관련 퀴즈`
       : '무작위 퀴즈';
 
   const category = params.daily
@@ -55,6 +63,8 @@ export default async function QuizPlayPage({ searchParams }: PageProps) {
     ? `random-${params.random}`
     : params.category
     ? String(params.category)
+    : params.chapter
+    ? `chapter-${params.chapter}`
     : 'random';
 
   return <QuizPlayer questions={questions} title={title} category={category} />;

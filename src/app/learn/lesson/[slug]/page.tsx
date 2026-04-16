@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Clock, BookOpen, LayoutList } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, BookOpen, LayoutList, HelpCircle, FlaskConical } from 'lucide-react';
 import {
   LESSONS,
   getLessonBySlug,
@@ -10,6 +10,7 @@ import {
 import { loadLessonMarkdown } from '@/lib/content/loader';
 import { parseLessonMarkdown } from '@/lib/learning/markdown-renderer';
 import { splitLessonIntoSteps } from '@/lib/learning/lesson-splitter';
+import { getChaptersForLesson, getScenariosForLesson } from '@/lib/learning/cross-refs';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -62,6 +63,10 @@ export default async function LessonPage({ params, searchParams }: PageProps) {
 
   const prevLesson = getPrevLesson(slug);
   const nextLesson = getNextLesson(slug);
+
+  // Phase 4B: 관련 챕터 + 실습 시나리오
+  const relatedChapters = getChaptersForLesson(slug);
+  const relatedScenarios = getScenariosForLesson(slug);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -178,6 +183,48 @@ export default async function LessonPage({ params, searchParams }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* 학습 연계: 관련 퀴즈 + 실습 시나리오 (Phase 4B) */}
+      {(relatedChapters.length > 0 || relatedScenarios.length > 0) && (
+        <Card variant="standard" className="mt-6 p-4">
+          <h3 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-primary-500" aria-hidden="true" />
+            이 레슨, 실전으로 굳히기
+          </h3>
+
+          {relatedChapters.length > 0 && (
+            <div className="mb-3">
+              <p className="text-xs text-text-muted mb-1.5">관련 퀴즈 풀어보기</p>
+              <div className="flex flex-wrap gap-2">
+                {relatedChapters.slice(0, 3).map((ch) => (
+                  <Link key={ch.number} href={`/quiz/play?chapter=${ch.number}`}>
+                    <Button variant="secondary" size="sm">
+                      <HelpCircle className="w-3.5 h-3.5" />
+                      {ch.number} {ch.title}
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {relatedScenarios.length > 0 && (
+            <div>
+              <p className="text-xs text-text-muted mb-1.5">계산기로 실습</p>
+              <div className="flex flex-wrap gap-2">
+                {relatedScenarios.slice(0, 4).map((s) => (
+                  <Link key={s.id} href={`/calculator?scenario=${s.id}`}>
+                    <Button variant="ghost" size="sm" className="bg-primary-50 hover:bg-primary-100">
+                      <FlaskConical className="w-3.5 h-3.5 text-primary-500" />
+                      <span className="text-primary-700">{s.id}</span>
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* 원본 명세서 참조 링크 */}
       <div className="mt-6 p-4 bg-info-100 rounded-xl border border-info-100 text-sm text-text-primary">

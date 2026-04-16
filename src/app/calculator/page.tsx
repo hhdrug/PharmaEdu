@@ -11,7 +11,8 @@
  * 이 파일은 전역 상태 + 계산 API 호출 + 입력 폼 조립만 담당.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Calculator, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -19,7 +20,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
 import type { CalcResult, DrugItem } from '@/lib/calc-engine';
-import { SCENARIOS } from '@/components/calculator/scenarios';
+import { SCENARIOS, SCENARIO_GROUPS } from '@/components/calculator/scenarios';
 import DrugTable, { type DrugRow, defaultDrugRow, nextDrugId } from '@/components/calculator/DrugTable';
 import ScenarioPanel from '@/components/calculator/ScenarioPanel';
 import CalculationResult from '@/components/calculator/CalculationResult';
@@ -285,6 +286,22 @@ export default function CalculatorPage() {
     mediIllness, mediIllnessB,
     selfInjYN, mt038, nPayRoundType, specialPub, isChadungExempt,
   ]);
+
+  // ── URL query ?scenario=S01 자동 적용 (Phase 4C) ──
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const scParam = searchParams.get('scenario');
+    if (scParam && SCENARIOS.some((s) => s.id === scParam)) {
+      // 이미 같은 시나리오가 선택되어 있으면 재적용 스킵
+      if (selectedScenarioId !== scParam) {
+        applyScenario(scParam);
+        // 해당 시나리오가 속한 그룹 탭도 전환
+        const gi = SCENARIO_GROUPS.findIndex((g) => g.ids.includes(scParam));
+        if (gi >= 0) setActiveGroup(gi);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // ── 결과 패널 컨텍스트 ──
   const resultContext = useMemo(() => ({

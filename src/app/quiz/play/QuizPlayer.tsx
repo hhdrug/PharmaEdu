@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { CheckCircle, XCircle, ChevronRight, RotateCcw, Home, Calculator, Lightbulb, BookOpen } from 'lucide-react';
+import { CheckCircle, XCircle, ChevronRight, RotateCcw, Home, Calculator, Lightbulb, BookOpen, FlaskConical } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -13,6 +13,7 @@ import { addWrongAnswer, markResolved, getWrongAnswers } from '@/lib/quiz/wrong-
 import { MiniCalculator } from '@/components/quiz/MiniCalculator';
 import { QUESTION_RENDERERS } from '@/lib/quiz/renderers';
 import { evaluateAnswer } from '@/lib/quiz/evaluator';
+import { getLearningRefsForQuestion } from '@/lib/learning/cross-refs';
 
 interface QuizPlayerProps {
   questions: QuizQuestion[];
@@ -627,7 +628,7 @@ export function QuizPlayer({ questions, title, category = 'random' }: QuizPlayer
                 ) : (
                   <XCircle className="w-5 h-5 text-error-500 flex-shrink-0 mt-0.5" />
                 )}
-                <div className="space-y-1">
+                <div className="space-y-1 flex-1">
                   <p
                     className={`font-semibold text-sm ${
                       answerState === 'correct' ? 'text-success-500' : 'text-error-500'
@@ -638,6 +639,9 @@ export function QuizPlayer({ questions, title, category = 'random' }: QuizPlayer
                   <p className="text-text-secondary text-sm leading-relaxed">
                     {question.explanation}
                   </p>
+
+                  {/* Phase 4D: 관련 레슨 복습 + 계산기 실습 링크 */}
+                  <QuizExplanationLinks question={question} />
                 </div>
               </div>
             </Card>
@@ -676,6 +680,49 @@ export function QuizPlayer({ questions, title, category = 'random' }: QuizPlayer
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── QuizExplanationLinks (Phase 4D): 해설 아래 관련 레슨/시나리오 추천 ──
+
+function QuizExplanationLinks({ question }: { question: QuizQuestion }) {
+  const { lessons, scenarios } = getLearningRefsForQuestion(question);
+  if (lessons.length === 0 && scenarios.length === 0) return null;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border-light/60 space-y-2">
+      {lessons.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-text-muted">📚 복습:</span>
+          {lessons.slice(0, 2).map((l) => (
+            <Link
+              key={l.slug}
+              href={`/learn/lesson/${l.slug}`}
+              className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 hover:underline"
+            >
+              <BookOpen className="w-3 h-3" />
+              Lesson {l.number}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {scenarios.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-text-muted">💡 계산기로 실습:</span>
+          {scenarios.slice(0, 3).map((s) => (
+            <Link
+              key={s.id}
+              href={`/calculator?scenario=${s.id}`}
+              className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-primary-50 text-primary-700 hover:bg-primary-100 transition-colors"
+            >
+              <FlaskConical className="w-3 h-3" />
+              {s.id}
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
