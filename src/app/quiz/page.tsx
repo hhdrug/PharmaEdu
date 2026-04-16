@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { HelpCircle, Shuffle, Star, ChevronRight } from 'lucide-react';
+import { HelpCircle, Shuffle, Star, ChevronRight, Infinity as InfinityIcon } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -85,6 +85,29 @@ export default async function QuizHomePage() {
             <Button variant="primary" size="md">
               <Shuffle className="w-4 h-4" aria-hidden="true" />
               바로 시작
+            </Button>
+          </Link>
+        </Card>
+      </section>
+
+      {/* ── 동적 생성 문제 (무한 풀이) ── */}
+      <section>
+        <h2 className="text-lg font-semibold text-text-primary mb-3 flex items-center gap-2">
+          <InfinityIcon className="w-5 h-5 text-primary-500" aria-hidden="true" />
+          동적 계산 문제
+          <Badge variant="primary">NEW</Badge>
+        </h2>
+        <Card variant="standard" className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex-1">
+            <p className="font-medium text-text-primary">실시간 생성 · 무한 풀이</p>
+            <p className="text-sm text-text-secondary mt-0.5">
+              calc-engine이 매번 새로운 처방 시나리오를 만들어 줍니다. 난이도 1~3 선택.
+            </p>
+          </div>
+          <Link href="/quiz/dynamic">
+            <Button variant="primary" size="md">
+              <InfinityIcon className="w-4 h-4" aria-hidden="true" />
+              시작하기
             </Button>
           </Link>
         </Card>
