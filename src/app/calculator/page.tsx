@@ -34,7 +34,7 @@ const INSU_CODE_OPTIONS = [
   { value: 'C10', label: 'C10 — 건강보험 일반' },
   { value: 'C11', label: 'C11 — 건강보험 (기타)' },
   { value: 'C20', label: 'C20 — 공무원재해보상' },
-  { value: 'C21', label: 'C21 — 공상' },
+  { value: 'C21', label: 'C21 — 건강보험 (지역 세대주)' },
   { value: 'C31', label: 'C31 — 차상위' },
   { value: 'C32', label: 'C32 — 차상위 (기타)' },
   { value: 'C80', label: 'C80 — 건강보험 (기타2)' },
