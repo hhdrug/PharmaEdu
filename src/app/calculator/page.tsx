@@ -200,7 +200,7 @@ export default function CalculatorPage() {
     setIsDalbitPharmacy(sc.isDalbitPharmacy);
     setHasCounseling(false);
     setIsNonFace(false);
-    setMediIllness('');
+    setMediIllness(sc.mediIllness ?? '');
     setMediIllnessB('');
     setGender('');
     setSelfInjYN('');
@@ -208,10 +208,15 @@ export default function CalculatorPage() {
     setNPayRoundType('');
     setSpecialPub('');
     setIsChadungExempt(false);
-    setIsTreatmentDisaster(false);
+    setIsTreatmentDisaster(sc.isTreatmentDisaster ?? false);
     setMedExempt({
-      isStudent: false, isPregnant: false, isHomeCare: false, isSelectMedi: false,
-      isHomeless: false, isExemptDisease: false, isDisabled: false,
+      isStudent:       sc.isStudent ?? false,
+      isPregnant:      sc.isPregnant ?? false,
+      isHomeCare:      sc.isHomeCare ?? false,
+      isSelectMedi:    sc.isSelectMedi ?? false,
+      isHomeless:      sc.isHomeless ?? false,
+      isExemptDisease: sc.isExemptDisease ?? false,
+      isDisabled:      sc.isDisabled ?? false,
     });
 
     setDrugs(

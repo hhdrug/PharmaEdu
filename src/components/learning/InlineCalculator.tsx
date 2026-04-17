@@ -207,18 +207,78 @@ const PRESETS: Record<string, PresetConfig> = {
     displayFields: ['drugAmount', 'dispensingFee', 'totalPrice', 'userPrice', 'pubPrice'],
   },
 
-  /** 6. S01 전체 시나리오 */
+  /** 6. S01 전체 시나리오 (Phase 7: CH11 §3.1 기준 40세, 단일 약품 7일) */
   'scenario-s01': {
-    title: 'S01 — 일반 건보 3일 전체 계산',
-    description: 'C10, 45세, 내복약 2종 3일 처방. 약품금액·조제료·본인부담·청구액 전 단계 확인.',
+    title: 'S01 — 기본 처방 (C10, 40세, 내복 7일)',
+    description: 'C10, 40세, 내복약 1종 7일. CH11 §3.1 공식 검증 시나리오 — 총액1 19,160원, 본인부담 5,700원, 청구액 13,460원.',
     fields: [
       { key: 'age',    label: '환자 나이', type: 'number', min: 0, max: 120 },
-      { key: 'price1', label: '약품1 단가 (원)', type: 'number', min: 1, step: 10 },
-      { key: 'price2', label: '약품2 단가 (원)', type: 'number', min: 1, step: 10 },
+      { key: 'price',  label: '약품 단가 (원)', type: 'number', min: 1, step: 10 },
+      { key: 'dose',   label: '1회 투약량', type: 'number', min: 0.5, step: 0.5 },
+      { key: 'dnum',   label: '1일 횟수', type: 'number', min: 1, max: 6 },
       { key: 'dday',   label: '투여일수', type: 'number', min: 1, max: 90 },
     ],
     buildOptions: (v) => ({
       insuCode: 'C10',
+      age: Number(v.age ?? 40),
+      dosDate: todayStr(),
+      drugList: [
+        {
+          code: '648901070',
+          insuPay: 'covered',
+          take: 'internal',
+          price: Number(v.price ?? 500),
+          dose: Number(v.dose ?? 1),
+          dNum: Number(v.dnum ?? 3),
+          dDay: Number(v.dday ?? 7),
+          insuDrug: true,
+        } satisfies DrugItem,
+      ],
+    }),
+    displayFields: ['drugAmount', 'dispensingFee', 'totalPrice', 'userPrice', 'pubPrice', 'steps', 'wageList'],
+  },
+
+  /** 7. S06 — 의료급여 1종 (D10, 50세, sbrdnType=M) — CH11 §3.6 */
+  'scenario-s06': {
+    title: 'S06 — 의료급여 1종 (D10, 50세)',
+    description: 'D10, 50세, sbrdnType=M, 내복 7일. CH11 §3.6 — Mcode 정액 본인부담(법령 500원, Mock 1,000원).',
+    fields: [
+      { key: 'age',    label: '환자 나이', type: 'number', min: 18, max: 120 },
+      { key: 'price',  label: '약품 단가 (원)', type: 'number', min: 1, step: 10 },
+      { key: 'dday',   label: '투여일수', type: 'number', min: 1, max: 90 },
+    ],
+    buildOptions: (v) => ({
+      insuCode: 'D10',
+      sbrdnType: 'M',
+      age: Number(v.age ?? 50),
+      dosDate: todayStr(),
+      drugList: [
+        {
+          code: '648901070',
+          insuPay: 'covered',
+          take: 'internal',
+          price: Number(v.price ?? 500),
+          dose: 1, dNum: 3,
+          dDay: Number(v.dday ?? 7),
+          insuDrug: true,
+        } satisfies DrugItem,
+      ],
+    }),
+    displayFields: ['drugAmount', 'dispensingFee', 'totalPrice', 'userPrice', 'pubPrice', 'steps', 'wageList'],
+  },
+
+  /** 8. S11 — 의료급여 2종 (D20, 45세, sbrdnType=B) — CH11 §3.11 */
+  'scenario-s11': {
+    title: 'S11 — 의료급여 2종 (D20, 45세)',
+    description: 'D20, 45세, sbrdnType=B, 내복 7일. CH11 §3.11 — 약국 2종 정액 500원 본인부담.',
+    fields: [
+      { key: 'age',    label: '환자 나이', type: 'number', min: 18, max: 120 },
+      { key: 'price',  label: '약품 단가 (원)', type: 'number', min: 1, step: 10 },
+      { key: 'dday',   label: '투여일수', type: 'number', min: 1, max: 90 },
+    ],
+    buildOptions: (v) => ({
+      insuCode: 'D20',
+      sbrdnType: 'B',
       age: Number(v.age ?? 45),
       dosDate: todayStr(),
       drugList: [
@@ -226,18 +286,9 @@ const PRESETS: Record<string, PresetConfig> = {
           code: '648901070',
           insuPay: 'covered',
           take: 'internal',
-          price: Number(v.price1 ?? 500),
+          price: Number(v.price ?? 500),
           dose: 1, dNum: 3,
-          dDay: Number(v.dday ?? 3),
-          insuDrug: true,
-        } satisfies DrugItem,
-        {
-          code: '648902080',
-          insuPay: 'covered',
-          take: 'internal',
-          price: Number(v.price2 ?? 300),
-          dose: 1, dNum: 3,
-          dDay: Number(v.dday ?? 3),
+          dDay: Number(v.dday ?? 7),
           insuDrug: true,
         } satisfies DrugItem,
       ],
@@ -245,37 +296,28 @@ const PRESETS: Record<string, PresetConfig> = {
     displayFields: ['drugAmount', 'dispensingFee', 'totalPrice', 'userPrice', 'pubPrice', 'steps', 'wageList'],
   },
 
-  /** 7. S06 — 의료급여 1종 (D10) */
-  'scenario-s06': {
-    title: 'S06 — 의료급여 1종 (D10) 5일 처방',
-    description: 'D10, 55세, 내복약 2종 5일. 의료급여 1종 본인부담 방식 확인.',
+  /** 9. S12 — 의료급여 1종 면제 (D10, 10세 18세미만 자동면제) — CH11 §3.12 + CH05 §12.4 */
+  'scenario-s12': {
+    title: 'S12 — 의료급여 1종 면제 (D10, 10세)',
+    description: 'D10, 10세, sbrdnType=M | 18세미만 자동 면제 → 본인부담 0원 (CH11 §3.12, CH05 §12.4 #1).',
     fields: [
-      { key: 'age',    label: '환자 나이', type: 'number', min: 18, max: 120 },
-      { key: 'price1', label: '약품1 단가 (원)', type: 'number', min: 1, step: 10 },
-      { key: 'price2', label: '약품2 단가 (원)', type: 'number', min: 1, step: 10 },
+      { key: 'age',    label: '환자 나이', type: 'number', min: 0, max: 17 },
+      { key: 'price',  label: '약품 단가 (원)', type: 'number', min: 1, step: 10 },
       { key: 'dday',   label: '투여일수', type: 'number', min: 1, max: 90 },
     ],
     buildOptions: (v) => ({
       insuCode: 'D10',
-      age: Number(v.age ?? 55),
+      sbrdnType: 'M',
+      age: Number(v.age ?? 10),
       dosDate: todayStr(),
       drugList: [
         {
           code: '648901070',
           insuPay: 'covered',
           take: 'internal',
-          price: Number(v.price1 ?? 600),
+          price: Number(v.price ?? 500),
           dose: 1, dNum: 3,
-          dDay: Number(v.dday ?? 5),
-          insuDrug: true,
-        } satisfies DrugItem,
-        {
-          code: '648902080',
-          insuPay: 'covered',
-          take: 'internal',
-          price: Number(v.price2 ?? 350),
-          dose: 1, dNum: 3,
-          dDay: Number(v.dday ?? 5),
+          dDay: Number(v.dday ?? 7),
           insuDrug: true,
         } satisfies DrugItem,
       ],
@@ -283,10 +325,10 @@ const PRESETS: Record<string, PresetConfig> = {
     displayFields: ['drugAmount', 'dispensingFee', 'totalPrice', 'userPrice', 'pubPrice', 'steps', 'wageList'],
   },
 
-  /** 8. S12 — 보훈위탁 G20+M10 */
-  'scenario-s12': {
-    title: 'S12 — 보훈위탁 G20+M10 7일 처방',
-    description: 'G20+M10, 75세. 보훈 전액청구 + 3자배분 확인 (환자·공단·보훈청).',
+  /** 10. S17 — 보훈위탁 G20+M10 (75세) — webapp 학습 보조 시나리오 */
+  'scenario-s17': {
+    title: 'S17 — 보훈위탁 G20+M10 (75세)',
+    description: 'G20+M10, 75세, 내복 7일. M10 전액 면제 + 3자배분 확인 (환자·공단·보훈청).',
     fields: [
       { key: 'age',    label: '환자 나이', type: 'number', min: 20, max: 120 },
       { key: 'price1', label: '약품1 단가 (원)', type: 'number', min: 1, step: 10 },

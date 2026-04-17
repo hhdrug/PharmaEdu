@@ -45,7 +45,7 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  NULL,
  '3150',
  '300 × 0.5 × 3 × 7 = 3,150원. 0.5정은 분할 투여를 의미합니다.',
- ARRAY['chapter:CH01','lesson:lesson-03-drug-amount-basics','scenario:S05','약품금액','분할투여','medium']),
+ ARRAY['chapter:CH01','lesson:lesson-03-drug-amount-basics','scenario:S03','약품금액','분할투여','medium']),
 
 ('CH01', 3, 'numeric',
  '약품 A(단가 432원, 1회 1정, 1일 3회, 5일치)와 B(단가 251원, 1회 0.5정, 1일 2회, 7일치). 각각 원미만 사사오입 후 합계 약품금액은? (원, 정수)',
@@ -105,7 +105,7 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  '["O","X"]'::jsonb,
  '0',
  'O. Z4010 산제 가산은 우선순위 1순위이며, 다른 가산(야간/토요/공휴일)을 배제하고 별도 행으로 청구됩니다 (2023.11.01 이후).',
- ARRAY['chapter:CH02','lesson:lesson-05-surcharge-rules','scenario:S19','Z코드','산제','가산','hard']),
+ ARRAY['chapter:CH02','lesson:lesson-05-surcharge-rules','scenario:S08','Z코드','산제','가산','hard']),
 
 -- ============================================================
 -- CH03 조제료 수가 계산 로직
@@ -144,7 +144,7 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  '["일반 30% 정률","FixCost 정액 분기 적용","50% 면제","전액 면제"]'::jsonb,
  '1',
  '65세 이상 저액 처방(총약제비 ≤ 10,000원)의 경우 FixCost(고정금액) 정액 본인부담을 적용합니다. insu_rate 테이블의 fix_cost 필드를 참조합니다.',
- ARRAY['chapter:CH03','lesson:lesson-06-copayment','scenario:S04','수가계산','65세특례','hard']),
+ ARRAY['chapter:CH03','lesson:lesson-06-copayment','scenario:S05','수가계산','65세특례','hard']),
 
 ('CH03', 3, 'numeric',
  'Z코드 점수가 6.95점, 환산지수 105.5원인 경우 산출 금액은? (원, 정수, 사사오입)',
@@ -169,28 +169,28 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  '["O","X"]'::jsonb,
  '0',
  'O. 야간가산은 평일 18:00~익일 09:00 사이에 적용됩니다. 6세 미만 환자의 22:00~익일 09:00는 별도의 소아심야가산이 적용됩니다.',
- ARRAY['chapter:CH04','lesson:lesson-05-surcharge-rules','scenario:S08','가산','야간','easy']),
+ ARRAY['chapter:CH04','lesson:lesson-05-surcharge-rules','scenario:S09','가산','야간','easy']),
 
 ('CH04', 2, 'multiple_choice',
  '야간가산과 토요가산이 함께 발생할 수 있는 상황에서 적용되는 것은?',
  '["둘 다 중복 적용","야간가산만","토요가산만 (우선순위 상위)","둘 다 배제"]'::jsonb,
  '2',
  '가산 우선순위: 산제(1) → 소아심야(2) → 토요(3) → 야간(4). 야간과 토요가 함께 발생하면 우선순위가 높은 토요가산만 적용됩니다.',
- ARRAY['chapter:CH04','lesson:lesson-05-surcharge-rules','scenario:S08','가산','우선순위','medium']),
+ ARRAY['chapter:CH04','lesson:lesson-05-surcharge-rules','scenario:S09','가산','우선순위','medium']),
 
 ('CH04', 2, 'multiple_choice',
  '산제(가루약) 가산에 대한 설명으로 올바른 것은?',
  '["Z4010 별도 행으로 청구 (2023.11.01 이후)","Z4xxx 본 행에 가산율 곱","항상 30% 가산","야간가산과 중복 적용"]'::jsonb,
  '0',
  '2023.11.01 이후 산제 가산은 Z4010(고정 금액 800원 수준)을 별도 행으로 청구합니다. 가산 우선순위 1순위로 다른 가산을 배제합니다.',
- ARRAY['chapter:CH04','lesson:lesson-05-surcharge-rules','scenario:S19','가산','산제','medium']),
+ ARRAY['chapter:CH04','lesson:lesson-05-surcharge-rules','scenario:S08','가산','산제','medium']),
 
 ('CH04', 3, 'multiple_choice',
  '6세 미만 환자가 야간(22:00)에 감기약을 처방받은 경우 적용되는 가산은?',
  '["야간가산","소아심야가산 (야간 대체)","6세미만 가산과 야간가산 중복","가산 없음"]'::jsonb,
  '1',
  '6세 미만 환자의 22:00~익일 09:00는 소아심야가산이 적용되며 일반 야간가산은 배제됩니다. 우선순위에서 소아심야가 야간보다 상위입니다.',
- ARRAY['chapter:CH04','lesson:lesson-05-surcharge-rules','scenario:S14','가산','소아심야','hard']),
+ ARRAY['chapter:CH04','lesson:lesson-05-surcharge-rules','scenario:S22','가산','소아심야','hard']),
 
 ('CH04', 3, 'ordering',
  '가산 우선순위를 높은 순서대로 정렬하세요.',

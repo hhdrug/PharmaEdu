@@ -41,21 +41,58 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  '["30% 정률","0원 (전액 면제)","50%","정액 1,500원"]'::jsonb,
  '1',
  'E10 산재보험은 요양급여비용 전액을 공단이 부담하므로 환자 본인부담금은 0원입니다. userPrice=0, pubPrice=totalPrice.',
- ARRAY['chapter:CH05','lesson:lesson-07-insurance-types','scenario:S09','본인부담','E10','medium']),
+ ARRAY['chapter:CH05','lesson:lesson-07-insurance-types','scenario:S18','본인부담','E10','medium']),
 
 ('CH05', 3, 'numeric',
  '총액1 = 10,000원인 6세 미만 환자(건강보험). 본인부담률 30% × 70% 감경이 적용될 때 본인부담금은? (원, 정수)',
  NULL,
  '2100',
  '6세 미만 감경: insuRate = 30% × 70% = 21%. 본인부담금 = trunc100(10,000 × 0.21) = trunc100(2,100) = 2,100원.',
- ARRAY['chapter:CH05','lesson:lesson-06-copayment','scenario:S05','본인부담','6세미만','hard']),
+ ARRAY['chapter:CH05','lesson:lesson-06-copayment','scenario:S03','본인부담','6세미만','hard']),
 
 ('CH05', 3, 'multiple_choice',
  '자동차보험(F10) 환자의 외래 약국 본인부담과 공단부담 비율은?',
  '["본인 30% / 공단 70%","본인 50% / 공단 50%","본인 100% / 공단 0% (약국 청구분)","본인 0% / 공단 100%"]'::jsonb,
  '2',
  'F10 자동차보험의 약국 처방은 전액 본인부담이며 공단청구액(pubPrice)은 0입니다. 실제 환자 부담은 추후 보험사로부터 보상받게 됩니다.',
- ARRAY['chapter:CH05','lesson:lesson-07-insurance-types','scenario:S10','본인부담','F10','hard']),
+ ARRAY['chapter:CH05','lesson:lesson-07-insurance-types','scenario:S19','본인부담','F10','hard']),
+
+-- ─ Phase 7: CH11 신규 시나리오 S11~S13 관련 문제 ─
+
+('CH05', 1, 'multiple_choice',
+ '의료급여 2종(D20, sbrdnType=B) 환자의 약국 본인부담금은?',
+ '["정액 500원","정액 1,000원","30% 정률","전액 면제"]'::jsonb,
+ '0',
+ 'D20 의료급여 2종은 약국에서 정액 500원(Bcode) 본인부담을 적용합니다. 법령 기준은 500원이며 EDB Mock 일부 환경에서 1,500원으로 설정될 수 있습니다. CH11 §3.11 참조.',
+ ARRAY['chapter:CH05','lesson:lesson-07-insurance-types','scenario:S11','의료급여','D20','easy']),
+
+('CH05', 2, 'multiple_choice',
+ '의료급여 1종(D10) 수급권자 중 본인부담 면제 대상이 아닌 것은? (CH05 §12.4)',
+ '["18세 미만","임산부","등록 장애인","65세 이상 일반"]'::jsonb,
+ '3',
+ 'CH05 §12.4 의료급여 1종 면제 8종: 18세 미만, 20세 미만 재학생, 임산부, 가정간호, 선택의료급여기관, 행려/노숙인, 결핵·희귀·중증질환, 등록 장애인. 65세 이상은 8종에 포함되지 않습니다 (건강보험에서만 65세 저액 정액 분기).',
+ ARRAY['chapter:CH05','lesson:lesson-07-insurance-types','scenario:S12','의료급여','면제8종','medium']),
+
+('CH05', 2, 'numeric',
+ '의료급여 1종(D10) 10세 환자, 총액1 = 19,160원. 본인부담금은? (원, 정수)',
+ NULL,
+ '0',
+ 'D10 + 10세는 18세 미만 자동 면제 대상(CH05 §12.4 #1). 정액 Mcode 적용 전에 면제 분기가 선행되어 본인부담금 = 0원. 청구액 = 총액1 전액 (19,160원). CH11 §3.12 참조.',
+ ARRAY['chapter:CH05','lesson:lesson-07-insurance-types','scenario:S12','의료급여','18세미만','medium']),
+
+('CH05', 3, 'numeric',
+ '의료급여 2종(D20, sbrdnType=B) + 경증질환 V252, 총액1 = 29,660원. 본인부담금은? (원, 정수)',
+ NULL,
+ '880',
+ 'V252 경증질환 3% 정률 적용: max(trunc10(29,660 × 3%), 500) = max(trunc10(889.8), 500) = max(880, 500) = 880원. 최저 500원 보장 규칙. CH11 §3.13 참조.',
+ ARRAY['chapter:CH05','lesson:lesson-07-insurance-types','scenario:S13','의료급여','V252','경증질환','hard']),
+
+('CH05', 3, 'multiple_choice',
+ 'C10 환자가 공상(공무상 재해) 플래그가 설정된 경우 본인부담금은?',
+ '["0원 (전액 공단부담)","30% 정률","정액 1,000원","총액1 전액"]'::jsonb,
+ '0',
+ 'CH05 §3.6 — 공상(공무상 재해)은 insuCode와 독립적인 별도 플래그(isTreatmentDisaster). 해당 시 본인부담금 0원, 전액 공단(공무원연금공단 등) 부담. 과거 "C21=공상" 매핑은 오인이며 C21은 건강보험 지역세대주 코드입니다.',
+ ARRAY['chapter:CH05','lesson:lesson-07-insurance-types','본인부담','공상','hard']),
 
 -- ============================================================
 -- CH06 3자배분 및 공비 로직
@@ -80,21 +117,21 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  '["userPrice=totalPrice, insuPrice=0","userPrice=0, mpvaPrice=totalPrice","insuPrice=totalPrice, 나머지=0","모두 1/3씩"]'::jsonb,
  '1',
  'M10은 보훈 전액면제 코드로 환자 부담 0원, 보훈이 전액 부담합니다. userPrice=0, mpvaPrice=totalPrice, insuPrice=0.',
- ARRAY['chapter:CH06','lesson:lesson-07-insurance-types','scenario:S07','3자배분','M10','medium']),
+ ARRAY['chapter:CH06','lesson:lesson-07-insurance-types','scenario:S16','3자배분','M10','medium']),
 
 ('CH06', 2, 'multiple_choice',
  '보훈 M60(60% 감면) 환자에서 감면된 금액은 누가 부담하는가?',
  '["환자 본인","공단","보훈(국가)","약국"]'::jsonb,
  '2',
  'M60 환자는 원래 본인부담의 60%를 감면받고 그만큼은 보훈(mpvaPrice)이 부담합니다. 나머지 40%가 실제 환자 부담(userPrice).',
- ARRAY['chapter:CH06','lesson:lesson-07-insurance-types','scenario:S15','3자배분','M60','medium']),
+ ARRAY['chapter:CH06','lesson:lesson-07-insurance-types','scenario:S07','3자배분','M60','medium']),
 
 ('CH06', 3, 'numeric',
  '총액1 10,000원, M60(60% 감면) 보훈 환자. 원래 본인부담률 30% 적용 시 mpvaPrice(보훈 부담)는? (원, 정수 추정 trunc100 미적용)',
  NULL,
  '1800',
  '원래 본인부담 = 10,000 × 0.30 = 3,000원. M60 감면 60% = 3,000 × 0.60 = 1,800원이 보훈 부담. 실제 환자 부담 = 3,000 - 1,800 = 1,200원 (trunc100 미적용 기준값).',
- ARRAY['chapter:CH06','lesson:lesson-07-insurance-types','scenario:S15','3자배분','M60','hard']),
+ ARRAY['chapter:CH06','lesson:lesson-07-insurance-types','scenario:S07','3자배분','M60','hard']),
 
 ('CH06', 3, 'true_false',
  '공비(pubPrice)는 공단부담금(insuPrice)과 동일한 의미이며, 계산 결과값도 같다. (O/X)',
@@ -158,14 +195,14 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  '["Z2000","Z4200","Z7001","Z5100"]'::jsonb,
  '1',
  '의사가 직접 조제하는 경우 일반 약국 조제 코드 대신 Z4200 계열 직접조제 코드를 사용합니다. 약국관리료·복약지도료는 산정하지 않습니다.',
- ARRAY['chapter:CH08','lesson:lesson-09-special-cases','scenario:S13','특수','직접조제','easy']),
+ ARRAY['chapter:CH08','lesson:lesson-09-special-cases','scenario:S21','특수','직접조제','easy']),
 
 ('CH08', 1, 'true_false',
  '달빛어린이약국은 6세 미만 야간/공휴일 조제 시 Z7001 특수 코드를 추가로 산정할 수 있다. (O/X)',
  '["O","X"]'::jsonb,
  '0',
  'O. 달빛어린이약국은 심야·공휴일 소아 조제에 특수 코드 Z7001 + Z2000610(조제기본료 가산)을 별도 산정합니다.',
- ARRAY['chapter:CH08','lesson:lesson-09-special-cases','scenario:S14','특수','달빛','easy']),
+ ARRAY['chapter:CH08','lesson:lesson-09-special-cases','scenario:S22','특수','달빛','easy']),
 
 ('CH08', 2, 'multiple_choice',
  '하드코딩 특수약품 648903860(희귀의약품류)에 대한 규칙으로 올바른 것은?',

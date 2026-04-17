@@ -35,7 +35,8 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 20,
     order: 1,
     relatedLessons: ['lesson-03-drug-amount-basics'],
-    relatedScenarios: ['S01', 'S02', 'S03', 'S05'],
+    // Phase 7 재매핑: 약품금액 사사오입/소수점 처리가 걸린 시나리오
+    relatedScenarios: ['S01', 'S02', 'S04', 'S10'],
   },
   {
     slug: 'ch02-조제료코드',
@@ -46,7 +47,8 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 25,
     order: 2,
     relatedLessons: ['lesson-04-dispensing-fees'],
-    relatedScenarios: ['S01', 'S02', 'S08'],
+    // Phase 7: Z코드 선택(접미사/가산코드)이 두드러지는 시나리오
+    relatedScenarios: ['S01', 'S03', 'S08', 'S09', 'S21'],
   },
   {
     slug: 'ch03-수가계산',
@@ -57,7 +59,7 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 35,
     order: 3,
     relatedLessons: ['lesson-04-dispensing-fees'],
-    relatedScenarios: ['S01', 'S04', 'S13'],
+    relatedScenarios: ['S01', 'S05', 'S21'],
   },
   {
     slug: 'ch04-가산로직',
@@ -68,7 +70,8 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 30,
     order: 4,
     relatedLessons: ['lesson-05-surcharge-rules'],
-    relatedScenarios: ['S08', 'S14', 'S15', 'S19'],
+    // Phase 7: 각종 가산 시나리오 전부 포함
+    relatedScenarios: ['S03', 'S08', 'S09', 'S10', 'S19', 'S22'],
   },
   {
     slug: 'ch05-본인부담금',
@@ -79,7 +82,8 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 40,
     order: 5,
     relatedLessons: ['lesson-06-copayment', 'lesson-07-insurance-types'],
-    relatedScenarios: ['S01', 'S04', 'S05', 'S06', 'S09', 'S10', 'S16'],
+    // Phase 7: 의료급여 1종 면제 8종 + 공상 + CH11 의료급여 전부
+    relatedScenarios: ['S01', 'S04', 'S05', 'S06', 'S11', 'S12', 'S13', 'S14', 'S15', 'S18', 'S19', 'S20'],
   },
   {
     slug: 'ch06-3자배분',
@@ -90,7 +94,7 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 30,
     order: 6,
     relatedLessons: ['lesson-06-copayment', 'lesson-07-insurance-types'],
-    relatedScenarios: ['S07', 'S12', 'S15'],
+    relatedScenarios: ['S07', 'S16', 'S17'],
   },
   {
     slug: 'ch07-반올림절사',
@@ -101,7 +105,7 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 20,
     order: 7,
     relatedLessons: ['lesson-08-rounding-precision'],
-    relatedScenarios: ['S01', 'S05', 'S06'],
+    relatedScenarios: ['S01', 'S02', 'S05', 'S06'],
   },
   {
     slug: 'ch08-특수케이스',
@@ -112,7 +116,8 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 35,
     order: 8,
     relatedLessons: ['lesson-09-special-cases'],
-    relatedScenarios: ['S13', 'S14', 'S17', 'S18', 'S19'],
+    // Phase 7: 혼합보험(S04)/빌런(S10)/B014(S14)/직접조제(S21)/달빛(S22)
+    relatedScenarios: ['S04', 'S10', 'S13', 'S14', 'S21', 'S22'],
   },
   {
     slug: 'ch09-데이터모델',
@@ -134,7 +139,7 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 40,
     order: 10,
     relatedLessons: ['lesson-10-integrated-practice'],
-    relatedScenarios: ['S01', 'S06', 'S12'],
+    relatedScenarios: ['S01', 'S04', 'S06', 'S12', 'S17'],
   },
   {
     slug: 'ch11-테스트시나리오',
@@ -145,7 +150,8 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 45,
     order: 11,
     relatedLessons: ['lesson-10-integrated-practice'],
-    relatedScenarios: ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13', 'S14', 'S15', 'S16', 'S17', 'S18', 'S19'],
+    // Phase 7: CH11 문서의 공식 검증 시나리오 S01~S13 전부 (webapp S14~S22는 학습 보조)
+    relatedScenarios: ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13'],
   },
   {
     slug: 'ch12-보훈약국',
@@ -156,7 +162,7 @@ export const CHAPTERS: ChapterMeta[] = [
     estimatedMinutes: 35,
     order: 12,
     relatedLessons: ['lesson-07-insurance-types', 'lesson-09-special-cases'],
-    relatedScenarios: ['S07', 'S12', 'S15'],
+    relatedScenarios: ['S07', 'S16', 'S17'],
   },
 ];
 
