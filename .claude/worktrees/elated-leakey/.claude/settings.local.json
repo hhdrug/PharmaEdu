@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//c/Projects/DSNode/PharmaEdu/src/lib/calc-engine/modules/insurance/**)",
-      "Read(//c/Projects/DSNode/PharmaEdu/src/lib/calc-engine/**)"
-    ]
-  }
-}

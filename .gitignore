@@ -48,3 +48,7 @@ build_output.txt
 
 # Windows null device artifact
 nul
+
+# Claude Code worktree/local settings
+.claude/worktrees/
+.claude/settings.local.json
