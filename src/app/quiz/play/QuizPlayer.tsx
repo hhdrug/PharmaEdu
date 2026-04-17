@@ -11,6 +11,7 @@ import { DIFFICULTY_LABEL, DIFFICULTY_VARIANT } from '@/lib/quiz/types';
 import { saveQuizHistory } from '@/lib/quiz/history';
 import { addWrongAnswer, markResolved, getWrongAnswers } from '@/lib/quiz/wrong-notes';
 import { MiniCalculator } from '@/components/quiz/MiniCalculator';
+import ScratchPad from '@/components/quiz/ScratchPad';
 import { QUESTION_RENDERERS } from '@/lib/quiz/renderers';
 import { evaluateAnswer } from '@/lib/quiz/evaluator';
 import { getLearningRefsForQuestion } from '@/lib/learning/cross-refs';
@@ -498,11 +499,14 @@ export function QuizPlayer({ questions, title, category = 'random' }: QuizPlayer
                     <MiniCalculator onClose={() => setShowCalc(false)} />
                   </div>
                 </div>
-                {/* PC 인라인 (sm 이상) */}
+                {/* PC 인라인 (sm 이상) — 메모장 + 계산기 */}
                 <div
-                  className="hidden sm:flex justify-end"
+                  className="hidden sm:flex justify-end gap-3"
                   style={{ animation: 'fadeIn 0.15s ease-out' }}
                 >
+                  <div className="w-56 flex-shrink-0">
+                    <ScratchPad key={`pad-mc-${question.id}-${cardKey}`} />
+                  </div>
                   <div className="w-64 flex-shrink-0">
                     <MiniCalculator onClose={() => setShowCalc(false)} />
                   </div>
@@ -574,15 +578,20 @@ export function QuizPlayer({ questions, title, category = 'random' }: QuizPlayer
                       />
                     </div>
                   </div>
-                  {/* PC 인라인 (sm 이상) */}
+                  {/* PC 인라인 (sm 이상) — 메모장 + 계산기 */}
                   <div
-                    className="hidden sm:block sm:w-64 sm:flex-shrink-0"
+                    className="hidden sm:flex gap-3 justify-end"
                     style={{ animation: 'fadeIn 0.15s ease-out' }}
                   >
-                    <MiniCalculator
-                      onUseResult={(val) => handleAnswerChange(val)}
-                      onClose={() => setShowCalc(false)}
-                    />
+                    <div className="w-56 flex-shrink-0">
+                      <ScratchPad key={`pad-num-${question.id}-${cardKey}`} />
+                    </div>
+                    <div className="w-64 flex-shrink-0">
+                      <MiniCalculator
+                        onUseResult={(val) => handleAnswerChange(val)}
+                        onClose={() => setShowCalc(false)}
+                      />
+                    </div>
                   </div>
                 </>
               )}
