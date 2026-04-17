@@ -33,6 +33,7 @@ const TEST_FILES = [
   'modules-safety-net.test.ts',
   'modules-exemption.test.ts',
   'modules-copayment-b2b5.test.ts',
+  'modules-gong-sang.test.ts',  // Phase 7 A2
 ];
 
 // ─── 실행 ─────────────────────────────────────────────────────────────────────
