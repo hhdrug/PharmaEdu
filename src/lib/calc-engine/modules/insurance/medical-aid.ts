@@ -9,22 +9,34 @@
  *   D80 (행려 8종): 전액 면제 (userPrice = 0)
  *   D90 (행려 보건): 전액 면제 (userPrice = 0)
  *   B014          : 30% 정률, 10원 절사 (2019.01.01~)
- *   B030          : 전액 면제 (2022.03.22~)
+ *   B030          : 잠복결핵 치료 외래 1·2종 → 0원 (CH05 §4.3, 2022.03.22~)
  *   V103          : 전액 면제 (질병코드 기반)
  *
- * 처리 우선순위:
+ * 처리 우선순위 (Phase 7 — CH05 §12.4 추가로 Step 0 신설):
+ *   0. D10 + 1종 면제 8종 중 하나 해당 → 0원 (CH05 §12.4)
  *   1. 보건기관 처방전 → 0원 (D40/D90)
  *   2. V103 질병코드 → 0원
  *   3. B030 면제 (2022.03.22~) → 0원
  *   4. hgGrade == "5" → 0원
  *   5. D80/D90 행려 → 0원
  *   6. B014 정률 30% (2019.01.01~) → trunc10(총액1 × 30%)
- *   7. 종별 정액: D10 → Mcode, D20/기타 → FixCost
- *   8. 건강생활유지비 차감 (1종 전용)
+ *   7. V252 경증 3% 정률 (일부 분기)
+ *   8. 종별 정액: D10 → Mcode, D20/기타 → FixCost
+ *   9. 건강생활유지비 차감 (1종 전용)
+ *
+ * CH05 §12.4 의료급여 1종 면제 8종:
+ *   1) 18세 미만 (age < 18 또는 isUnder18=true)
+ *   2) 20세 미만 재학생 (isStudent=true)
+ *   3) 임산부 (isPregnant=true)
+ *   4) 가정간호 대상자 (isHomeCare=true)
+ *   5) 선택의료급여기관 이용자 (isSelectMedi=true)
+ *   6) 행려 / 노숙인 (isHomeless=true, D80은 별도 Step 5에서 처리)
+ *   7) 결핵·희귀난치·중증질환자 (isExemptDisease=true)
+ *   8) 등록 장애인 (isDisabled=true)
  *
  * 참조 문서:
  *   - C#: CopaymentCalculator.cs → CalcCopay_D()
- *   - output/CH05_보험유형별_본인부담금.md §4 (의료급여 본인부담금)
+ *   - output/CH05_보험유형별_본인부담금.md §4, §12.4
  *   - EDB InsuRateCalc2.cs 라인 3688~3762
  */
 
@@ -73,6 +85,23 @@ export function calcMedicalAid(
 
   const insuCode = options.insuCode.toUpperCase();
   const sbrdnType = options.sbrdnType ?? '';
+
+  // ── Step 0: D10 1종 면제 8종 판정 (CH05 §12.4) ──────────────────────────
+  // CH05 §12.4 가 8종을 명시: 18세미만·20세미만 재학생·임산부·가정간호·선택기관·
+  //                           행려/노숙인·결핵/희귀/중증질환·등록 장애인.
+  // D80(행려 8종) 은 별도 Step 5 가 이미 처리 — D10 1종 본인부담(정액 Mcode) 면제 케이스만 여기서 처리.
+  if (insuCode === 'D10') {
+    const reason = _exemptReason1stCopay(options);
+    if (reason) {
+      steps.push({
+        title: '의료급여 1종 면제 대상 (CH05 §12.4 8종)',
+        formula: `${reason} → 0원`,
+        result: 0,
+        unit: '원',
+      });
+      return _buildResult(result, 0, steps);
+    }
+  }
 
   // ── Step 1: 보건기관 처방전 면제 ─────────────────────────────────────────
   // D40(2종 보건), D90(행려 보건) — isHealthCenterPresc 또는 보건코드 자체로 판정
@@ -313,6 +342,26 @@ export function applySbrdnTypeModifier(
 }
 
 // ─── 내부 헬퍼 ────────────────────────────────────────────────────────────────
+
+/**
+ * CH05 §12.4 — 의료급여 1종 8종 면제 사유 중 해당되는 첫 번째 것을 한글 라벨로 반환.
+ * 하나도 해당 없으면 null.
+ * Step 0 에서 판정/사유 표시 양 용도로 사용.
+ */
+function _exemptReason1stCopay(o: CalcOptions): string | null {
+  // 나이 파싱 (age 는 string 타입) — 18세 미만 자동 판정
+  const ageNum = parseInt(String(o.age ?? ''), 10);
+  if (!Number.isNaN(ageNum) && ageNum < 18) return '18세 미만';
+  if (o.isUnder18) return '18세 미만';
+  if (o.isStudent) return '20세 미만 중·고등학교 재학생';
+  if (o.isPregnant) return '임산부';
+  if (o.isHomeCare) return '가정간호 대상자';
+  if (o.isSelectMedi) return '선택의료급여기관 이용자';
+  if (o.isHomeless) return '행려 / 노숙인';
+  if (o.isExemptDisease) return '결핵·희귀난치·중증질환';
+  if (o.isDisabled) return '등록 장애인';
+  return null;
+}
 
 /**
  * CalcResult에 userPrice, pubPrice, steps를 갱신해 반환

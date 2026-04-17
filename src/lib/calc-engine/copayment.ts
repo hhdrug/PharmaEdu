@@ -140,6 +140,24 @@ export function calcCopayment(
     steps,
   };
 
+  // ── Phase 7 A2: 공상(공무상 재해) 전액 공단부담 ──────────────────────────
+  // CH05 §3.6 점검: C21 코드 오인 → 별도 플래그 isTreatmentDisaster 로 분리.
+  // 공상은 보험유형과 독립적으로 판정되며 본인부담 0원 (공무원연금공단 등 부담).
+  if (opt.isTreatmentDisaster) {
+    steps.push({
+      title: '공상 (공무상 재해)',
+      formula: '본인부담 0원 → 전액 공단부담',
+      result: 0,
+      unit: '원',
+    });
+    return _resultToCopay({
+      ...partialResult,
+      userPrice: 0,
+      pubPrice: totalPrice,
+      steps,
+    });
+  }
+
   // ── 보훈 M코드 우선 처리 (insuCode 무관) ─────────────────────────────────
   // C10+M10 같이 건강보험 insuCode이지만 bohunCode가 M코드인 경우
   // (예: S07 시나리오 — C10+M10, 보훈 전액감면)

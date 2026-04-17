@@ -26,6 +26,7 @@ import DrugTable, { type DrugRow, defaultDrugRow, nextDrugId } from '@/component
 import ScenarioPanel from '@/components/calculator/ScenarioPanel';
 import CalculationResult from '@/components/calculator/CalculationResult';
 import ResultAnalysisPanel from '@/components/calculator/ResultAnalysisPanel';
+import MedicalAidExemptPanel, { type MedicalAidExemptState } from '@/components/calculator/MedicalAidExemptPanel';
 
 // ─── 드롭다운 옵션 ─────────────────────────────────────────────────────
 
@@ -127,6 +128,20 @@ export default function CalculatorPage() {
   const [hasCounseling, setHasCounseling] = useState(false);
   const [isDalbitPharmacy, setIsDalbitPharmacy] = useState(false);
 
+  // ── Phase 7 A2: 공상(공무상 재해) 플래그 (CH05 §3.6) ──
+  const [isTreatmentDisaster, setIsTreatmentDisaster] = useState(false);
+
+  // ── Phase 7 A1: 의료급여 1종 면제 8종 (CH05 §12.4) ──
+  const [medExempt, setMedExempt] = useState<Omit<MedicalAidExemptState, 'isUnder18Auto'>>({
+    isStudent: false,
+    isPregnant: false,
+    isHomeCare: false,
+    isSelectMedi: false,
+    isHomeless: false,
+    isExemptDisease: false,
+    isDisabled: false,
+  });
+
   // ── 고급 옵션 ──
   const [selfInjYN, setSelfInjYN] = useState('');
   const [mt038, setMt038] = useState('');
@@ -151,6 +166,8 @@ export default function CalculatorPage() {
   );
   const parsedAge = parseInt(age, 10) || 0;
   const isUnder6 = parsedAge >= 0 && parsedAge < 6;
+  const isUnder18Auto = parsedAge >= 0 && parsedAge < 18;
+  const isMedicalAid1st = insuCode === 'D10';
 
   // ── 약품 행 조작 ──
   const addDrugRow = useCallback(() => {
@@ -191,6 +208,11 @@ export default function CalculatorPage() {
     setNPayRoundType('');
     setSpecialPub('');
     setIsChadungExempt(false);
+    setIsTreatmentDisaster(false);
+    setMedExempt({
+      isStudent: false, isPregnant: false, isHomeCare: false, isSelectMedi: false,
+      isHomeless: false, isExemptDisease: false, isDisabled: false,
+    });
 
     setDrugs(
       sc.drugs.map((d) => ({
@@ -261,6 +283,18 @@ export default function CalculatorPage() {
         nPayRoundType: nPayRoundType || undefined,
         specialPub: specialPub || undefined,
         isChadungExempt: isChadungExempt || undefined,
+        // Phase 7 A2: 공상 플래그
+        isTreatmentDisaster: isTreatmentDisaster || undefined,
+        // Phase 7 A1: 의료급여 1종 면제 8종 (D10 선택 시에만 전달)
+        ...(isMedicalAid1st && {
+          isStudent:       medExempt.isStudent || undefined,
+          isPregnant:      medExempt.isPregnant || undefined,
+          isHomeCare:      medExempt.isHomeCare || undefined,
+          isSelectMedi:    medExempt.isSelectMedi || undefined,
+          isHomeless:      medExempt.isHomeless || undefined,
+          isExemptDisease: medExempt.isExemptDisease || undefined,
+          isDisabled:      medExempt.isDisabled || undefined,
+        }),
       };
 
       const res = await fetch('/api/calculate', {
@@ -295,6 +329,7 @@ export default function CalculatorPage() {
     isDirectDispensing, isNonFace, hasCounseling, isDalbitPharmacy,
     mediIllness, mediIllnessB,
     selfInjYN, mt038, nPayRoundType, specialPub, isChadungExempt,
+    isTreatmentDisaster, medExempt, isMedicalAid1st,
     toast,
   ]);
 
@@ -472,13 +507,15 @@ export default function CalculatorPage() {
                     { id: 'isNonFace',          label: '비대면',      desc: '비대면 조제',          value: isNonFace,          setter: setIsNonFace },
                     { id: 'hasCounseling',      label: '복약상담료',  desc: 'Z7001 추가',          value: hasCounseling,      setter: setHasCounseling },
                     { id: 'isDalbitPharmacy',   label: '달빛어린이',  desc: '달빛어린이 약국',     value: isDalbitPharmacy,   setter: setIsDalbitPharmacy },
+                    // Phase 7 A2: 공상(공무상 재해) 플래그 — 보험코드와 독립
+                    { id: 'isTreatmentDisaster', label: '공상',       desc: '공무상 재해 — 전액 공단부담',        value: isTreatmentDisaster, setter: setIsTreatmentDisaster },
                   ].map(({ id, label, desc, value, setter }) => (
                     <CheckChip key={id} id={id} label={label} description={desc} checked={value} onChange={setter} />
                   ))}
                 </div>
 
                 {(isNight || isHolyDay || isSaturday || isMidNight || isDirectDispensing
-                  || isDalbitPharmacy || isNonFace || hasCounseling || isUnder6) && (
+                  || isDalbitPharmacy || isNonFace || hasCounseling || isUnder6 || isTreatmentDisaster) && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {isNight          && <Badge variant="info">야간가산</Badge>}
                     {isHolyDay        && <Badge variant="warning">공휴가산</Badge>}
@@ -489,10 +526,21 @@ export default function CalculatorPage() {
                     {isDalbitPharmacy && <Badge variant="success">달빛어린이</Badge>}
                     {isNonFace        && <Badge variant="neutral">비대면</Badge>}
                     {hasCounseling    && <Badge variant="neutral">복약상담료</Badge>}
+                    {isTreatmentDisaster && <Badge variant="success">공상 (전액면제)</Badge>}
                   </div>
                 )}
               </div>
             </Card>
+
+            {/* Phase 7 A1: 의료급여 1종 면제 8종 패널 (D10 선택 시에만 노출) */}
+            <MedicalAidExemptPanel
+              active={isMedicalAid1st}
+              state={{ ...medExempt, isUnder18Auto }}
+              onChange={(key, value) => {
+                if (key === 'isUnder18Auto') return; // readonly
+                setMedExempt((prev) => ({ ...prev, [key]: value }));
+              }}
+            />
 
             {/* 약품 목록 + 계산 실행 버튼 */}
             <DrugTable

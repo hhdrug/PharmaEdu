@@ -189,9 +189,9 @@ function z5DosageCode(days: number, hasExternalOnly: boolean): string {
 /**
  * 직접조제 여부 판정
  *
- * CalcOptions에 isDirectDispensing 필드가 추가될 때까지
- * insuCode 기반으로 판정한다 (C21 공상 등).
- * Integration Lead가 CalcOptions에 필드를 추가하면 해당 필드 우선 사용.
+ * CH05 §3.6 점검 2026-04-14 결과: C21 은 "지역가입자 세대주" 건강보험 코드이며
+ * 공상(공무상 재해) 과 무관함. 과거 "C21=공상" 매핑은 오인이었음.
+ * 공상은 별도 플래그 `options.isTreatmentDisaster` 로만 판정.
  *
  * @param options 계산 파라미터
  * @returns 직접조제 여부
@@ -200,8 +200,8 @@ export function isDirectDispensingMode(options: CalcOptions): boolean {
   if (typeof options.isDirectDispensing === 'boolean') {
     return options.isDirectDispensing;
   }
-  // 공상(C21) 보험코드는 직접조제 필수
-  return options.insuCode === 'C21';
+  // 공상(공무상 재해) 은 직접조제 규정 적용 대상
+  return options.isTreatmentDisaster === true;
 }
 
 /**

@@ -286,6 +286,16 @@ export interface CalcOptions {
   /** 면제 질환 여부 — C# CalcOptions.cs:L206 */
   isExemptDisease?: boolean;
 
+  // ── [CH05 §12.4] 의료급여 1종 면제 8종 — Phase 7 추가 ────────────────────
+  /** 18세 미만 여부 (1/8) — 나이로 자동 판정 가능하지만 명시적 플래그도 지원 */
+  isUnder18?: boolean;
+  /** 등록 장애인 여부 (8/8) — 의료급여 1종 면제 대상 */
+  isDisabled?: boolean;
+
+  // ── [CH05 §3.6] 공상 (공무상 재해) — Phase 7 추가 ───────────────────────
+  /** 공상(공무상 재해) 여부 — insuCode와 독립적 플래그. 해당 시 본인부담 0원 */
+  isTreatmentDisaster?: boolean;
+
   // ── [B-10] MT038 특정내역 ─────────────────────────────────────────────────
   /**
    * MT038 특정내역 (보훈위탁 G20 약국 전용)

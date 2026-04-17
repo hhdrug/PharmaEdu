@@ -92,6 +92,24 @@ export function ceil100(v: number): number {
 }
 
 /**
+ * 자보·비급여 할증액 산출 (CH04 §4-9 M_AddRat)
+ *
+ * 공식: surchargeAmount = Math.floor(price × addRat / 100)   ← int 절사
+ *
+ * 문서 근거: CH04 §4-9 "M_AddRat" —
+ *   "(int)((decimal)price × M_AddRat / 100)" 의 decimal 곱 후 int 절사.
+ *   round1(사사오입)이 아니라 floor(버림)임에 주의.
+ *
+ * @param price  기준 금액 (원)
+ * @param addRat 할증율 (%)
+ * @returns 할증액 (원, 정수)
+ */
+export function surchargeAmount(price: number, addRat: number): number {
+  if (addRat <= 0) return 0;
+  return Math.floor(price * addRat / 100);
+}
+
+/**
  * 비급여 반올림 6종 디스패처 (NPayRoundType)
  *
  * 용도: 비급여 조제료 차액, 비급여 금액 최종 절사

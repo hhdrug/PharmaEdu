@@ -23,7 +23,7 @@
  */
 
 import type { CalcOptions, CalcResult, InsuRate } from '../../types';
-import { trunc10, round1 } from '../../rounding';
+import { trunc10, surchargeAmount } from '../../rounding';
 
 // ─── 공개 함수 ────────────────────────────────────────────────────────────────
 
@@ -32,7 +32,7 @@ import { trunc10, round1 } from '../../rounding';
  *
  * 처리 순서 (C# CalcCopay_F() + step 9 기준):
  *   1. userPrice = Trunc10(totalPrice)   → 전액 환자 부담, 10원 절사
- *   2. premium   = addRat > 0 ? Round1(totalPrice × addRat / 100) : 0
+ *   2. premium   = addRat > 0 ? floor(totalPrice × addRat / 100) : 0   ← CH04 §4-9 int 절사
  *   3. insuPrice = 0  (공단 청구 없음)
  *   4. pubPrice  = 0
  *
@@ -56,9 +56,9 @@ export function calcAutoInsurance(
   const userPrice = trunc10(totalPrice);
 
   // Step 2: 할증(Premium) 계산
-  // C# step 9: Premium = Round1(pbSum * opt.AddRat / 100)
+  // CH04 §4-9 M_AddRat: premium = floor(totalPrice × addRat / 100)  (int 절사)
   const addRat = options.addRat ?? 0;
-  const premium = addRat > 0 ? round1(totalPrice * addRat / 100) : 0;
+  const premium = surchargeAmount(totalPrice, addRat);
 
   // Step 3: 공단 청구액 = 0 (자보는 공단 청구 없음)
   const pubPrice = 0;
@@ -82,7 +82,7 @@ export function calcAutoInsurance(
         ? [
             {
               title: '자동차보험 할증액',
-              formula: `Round1(${totalPrice} × ${addRat} / 100) = ${premium}`,
+              formula: `floor(${totalPrice} × ${addRat} / 100) = ${premium}`,
               result: premium,
               unit: '원',
             },

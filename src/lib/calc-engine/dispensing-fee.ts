@@ -113,49 +113,19 @@ function classifyDrugs(drugs: DrugItem[]): DrugClassify {
 
 }
 
-// ─── 의약품관리료 일수별 코드 결정 ──────────────────────────────────────────
-
-/**
- * 의약품관리료 25구간 Z코드 생성 (처방조제 경로)
- *
- * C# 원본: DispensingFeeCalculator.cs:GetMedMgmtSugaCD():L672
- * - 1~15일: Z51DD (DD = 2자리 일수)
- * - 16~20일: Z5316
- * - 21~25일: Z5321
- * - 26~30일: Z5326
- * - 31~40일: Z5331
- * - 41~50일: Z5341
- * - 51~60일: Z5351
- * - 61~70일: Z5361
- * - 71~80일: Z5371
- * - 81~90일: Z5381
- * - 91일+: Z5391
- *
- * 외용약만인 경우: Z5010 고정 (C# CalcDrugMgm():L1553)
- *
- * 근거: ch02_analyst.md §5-3 "GetMedMgmtSugaCD() 미포팅",
- *        ch02_verifier.md §1 "GetMedMgmtSugaCD():L672 — ✗ 미포팅",
- *        99_FINAL_REPORT.md §4.2 C-05, §7 B-8
- *
- * 주의: Z5101~Z5391 단가는 수가 고시에 개별 코드로 없음.
- *        seed.sql에 단가가 없으면 addWage에서 price=0 → 자동 skip됨.
- *        단가 데이터 추가 시 자동으로 산정됨.
- */
-function getMedMgmtSugaCode(days: number, hasExternalOnly: boolean): string {
-  if (hasExternalOnly) return 'Z5010'; // 외용약만: Z5010 고정
-  if (days <= 0) return 'Z5010';       // 안전 처리
-  if (days <= 15) return `Z51${String(days).padStart(2, '0')}`;
-  if (days <= 20) return 'Z5316';
-  if (days <= 25) return 'Z5321';
-  if (days <= 30) return 'Z5326';
-  if (days <= 40) return 'Z5331';
-  if (days <= 50) return 'Z5341';
-  if (days <= 60) return 'Z5351';
-  if (days <= 70) return 'Z5361';
-  if (days <= 80) return 'Z5371';
-  if (days <= 90) return 'Z5381';
-  return 'Z5391';
-}
+// ─── 의약품관리료 코드 결정 ──────────────────────────────────────────────────
+//
+// CH02 §3-4 / §5-3 점검 2026-04-08 결과:
+//   "25구간 일수별 코드(Z5101~Z5391)" 는 수가 고시에 존재하지 않는 "가짜 의사코드" 였음.
+//   EDB Mock 기준 실제 Z5xxx 는 4개 코드뿐:
+//     - Z5000 : 의약품관리료 (일반)
+//     - Z5001 : 의약품관리료 (마약/향정)
+//     - Z5010 : 의약품관리료 (외용약 일수가산)
+//     - Z5011 : 의약품관리료 (병팩)
+//
+//   이전 `getMedMgmtSugaCode()` 함수(25구간 생성)는 폐기됨.
+//   실제 산정 로직은 아래 의약품관리료 블록에서 직접 4개 코드로 분기.
+//   근거: src/content/chapters/ch02-조제료코드.md §3-4, §5-3.
 
 // ─── Z코드 선택 로직 ─────────────────────────────────────────────────────────
 
@@ -584,22 +554,21 @@ export async function calcDispensingFee(
     addWage(z4ExternalCode(sc, text3), 1);
   }
 
-  // (5) 의약품관리료 — B-8: Z5001/Z5011 분기 + 25구간 가산 행
-  // 근거: DispensingFeeCalculator.cs CalcDrugMgm() L1524, GetMedMgmtSugaCD() L672
+  // (5) 의약품관리료 — CH02 §3-4 / §5-3 (2026-04-08 점검):
+  //   Z5000 (일반) / Z5001 (마약·향정) / Z5010 (외용만 가산) / Z5011 (병팩)
+  //   폐기된 "25구간 일수별 코드(Z5101~Z5391)" 는 제거됨.
   if (drugCtx.allPack) {
-    // 병팩 전용 관리료 — Z5011만 산정 후 return
+    // 병팩 전용
     addWage('Z5011', 1);
   } else {
-    // 기본 관리료: 마약/향정 포함 시 Z5001, 일반 시 Z5000
     const baseCode = drugCtx.hasNarcotic ? 'Z5001' : 'Z5000';
     addWage(baseCode, 1);
 
-    // 일수별 가산 행 (25구간 코드 Z5101~Z5391)
-    // price=0이면 addWage 내부에서 자동 skip → 단가 미등록 상태에서도 안전
+    // 외용약만 처방 시 Z5010 일수가산 행 추가 (기본료와 별도)
     const hasExternalOnly = drugCtx.hasExternal && !drugCtx.hasInternal;
-    const managementDays =
-      drugCtx.maxInternalDay > 0 ? drugCtx.maxInternalDay : drugCtx.maxExternalDay;
-    addWage(getMedMgmtSugaCode(managementDays, hasExternalOnly), 1);
+    if (hasExternalOnly) {
+      addWage('Z5010', 1);
+    }
   }
 
   // ── (6) 산제 가산 행 추가 (구체계: 2023.11.01 이전 Z4010) ─────────────────
