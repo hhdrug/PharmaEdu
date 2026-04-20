@@ -15,9 +15,9 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
 -- ============================================================
 
 ('CH10', 2, 'numeric',
- '[실전] 45세 여성, 건강보험 C10, 평일 주간 내원. 내복약 1종(단가 600원, 1회 1정, 1일 3회, 10일분) 처방. 본인부담금은? (원)',
- NULL, '6700',
- '약품=600×1×3×10=18,000. 조제료(10일, Z4110): 790+1,720+1,150+4,950+680=9,290. 총액1=trunc10(27,290)=27,290. 본인부담=trunc100(27,290×0.3)=trunc100(8,187)=8,100? 재계산: 27,290 × 0.3 = 8,187 → trunc100 = 8,100원. (문서 기준 Z4110=4,950원 가정)',
+ '[실전] 45세 여성, 건강보험 C10, 평일 주간 내원. 내복약 1종(단가 600원, 1회 1정, 1일 3회, 10일분) 처방. 조제료 합계가 9,290원일 때 본인부담금은? (원)',
+ NULL, '8100',
+ '약품금액 = 600×1×3×10 = 18,000원. 조제료 = 9,290원. 총액1 = trunc10(18,000 + 9,290) = 27,290원. 본인부담 = trunc100(27,290 × 0.30) = trunc100(8,187) = 8,100원.',
  ARRAY['chapter:CH10','lesson:lesson-10-integrated-practice','exam-pattern','실전','종합','medium']),
 
 ('CH10', 3, 'numeric',
@@ -39,9 +39,9 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  ARRAY['chapter:CH10','lesson:lesson-06-copayment','exam-pattern','6세미만','야간','hard']),
 
 ('CH10', 3, 'numeric',
- '[실전] 자보 F10 35세, 내복 3종 (800/1/3/7 + 450/1/3/7 + 300/1/3/7). 할증 addRat=15%. 환자 실부담(userPrice + premium)? (원)',
- NULL, '37290',
- '약품합=16,800+9,450+6,300=32,550. 조제료(7일, 3종 내복)=8,660 가정. 총액1=trunc10(41,210)=41,210. userPrice=trunc10(41,210)=41,210? 자보는 전액본인=userPrice=41,210. 하지만 이 문제는 15% addRat 할증 추가: premium=floor(41,210×0.15)=6,181. 합=47,391. 단순화를 위해 total 24,240 기준 재계산: 답 37,290은 예시. (실전 문제 난이도 높음, 정확한 답은 총액에 따라 변함)',
+ '[실전] 자보 F10 환자, 총액1이 40,000원으로 확정됐다. addRat=15% 할증 적용 시 환자 실부담(userPrice + premium)은? (원)',
+ NULL, '46000',
+ 'F10 자동차보험: userPrice = trunc10(40,000) = 40,000원 (전액 본인부담). premium = floor(40,000 × 15/100) = 6,000원. 환자 실부담 = 40,000 + 6,000 = 46,000원. CH04 §4-9 M_AddRat floor 절사.',
  ARRAY['chapter:CH10','lesson:lesson-07-insurance-types','exam-pattern','자보','할증','hard']),
 
 ('CH10', 2, 'multiple_choice',
@@ -51,9 +51,9 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  ARRAY['chapter:CH10','lesson:lesson-06-copayment','exam-pattern','총액1','medium']),
 
 ('CH10', 3, 'numeric',
- '[실전] G10+M60 보훈 65세, 내복 500/1/3/7 단일약품. 3자배분 결과 중 보훈청구액(mpvaPrice)? (원)',
- NULL, '9120',
- '약품=10,500. 조제료(M60 감면): Z4107 4,320 + Z5000 680 = 5,000. 총액1=trunc10(15,500)=15,500. 보훈청 = 15,500 × 0.60 = 9,300? 재계산: 조제료 Z4107+Z5000 만 = 5,000. 총액=15,500. 보훈청=9,300원. (답 9,120은 다른 가정일 수 있음, 문제 재검증)',
+ '[실전] G10+M60 보훈 65세, 내복 500/1/3/7 단일약품. 조제료 합이 5,000원(Z1000/Z2000/Z3000 감면으로 0원, Z4107 4,320 + Z5000 680)일 때 보훈청구액(mpvaPrice)? (원)',
+ NULL, '9300',
+ '약품금액 = 10,500원. 조제료(M60 감면) = 5,000원. 총액1 = trunc10(15,500) = 15,500원. 보훈청구액 = 15,500 × 0.60 = 9,300원. 본인부담 = trunc100(6,200 × 0.30) = 1,800원, 공단청구 = 15,500 - 9,300 - 1,800 = 4,400원. CH11 §3.7 S07.',
  ARRAY['chapter:CH06','lesson:lesson-07-insurance-types','exam-pattern','보훈','M60','hard']),
 
 ('CH10', 2, 'numeric',

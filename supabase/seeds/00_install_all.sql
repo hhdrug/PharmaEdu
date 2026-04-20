@@ -1,32 +1,12 @@
 -- ╔════════════════════════════════════════════════════════════════╗
 -- ║  팜에듀 Quiz 완전 재시딩 — 원샷 통합 스크립트                  ║
--- ║  이 파일 하나만 Supabase SQL Editor 에 붙여넣고 Run 하면 끝.   ║
--- ║                                                                ║
--- ║  포함된 seed (순서대로 실행됨):                                ║
--- ║    1. quiz_redesign.sql                  — 카테고리 12 + 약품 50 ║
--- ║    2. quiz_redesign_part2.sql            — 기본 50문            ║
--- ║    3. seed_quiz_ch09~12.sql              — CH09-12 정적 60문    ║
--- ║    4. seed_quiz_ch01_ch04.sql            — CH01-04 Phase 2 24문 ║
--- ║    5. seed_quiz_ch05_ch08.sql            — CH05-08 Phase 2 29문 ║
--- ║    6. quiz_templates_seed.sql            — 동적 템플릿 20        ║
--- ║    7. quiz_templates_expansion.sql       — 동적 템플릿 +70 = 90  ║
--- ║    8. seed_quiz_ch11_scenarios.sql       — CH11 자동변환 50문    ║
--- ║    9. seed_quiz_ch01_ch04_expansion.sql  — CH01-04 개념 60문    ║
--- ║   10. seed_quiz_ch05_ch08_expansion.sql  — CH05-08 개념 60문    ║
--- ║   11. seed_quiz_ch09_ch12_expansion.sql  — CH09-12 개념 40문    ║
--- ║   12. seed_quiz_exam_patterns.sql        — 기출 패턴 25문       ║
--- ║                                                                ║
+-- ║  Supabase SQL Editor 에 붙여넣고 Run.                          ║
 -- ║  최종: quiz_question ≈ 335문 + quiz_templates 90개              ║
--- ║                                                                ║
--- ║  ⚠ 주의                                                         ║
--- ║    - 테이블이 이미 생성되어 있어야 함 (migrations 선행)         ║
--- ║    - 재실행 안전 (모든 블록에 DELETE WHERE 조건 포함)           ║
+-- ║  재실행 안전.                                                   ║
 -- ╚════════════════════════════════════════════════════════════════╝
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ quiz_redesign.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ quiz_redesign.sql
 -- ============================================================
 -- seeds/quiz_redesign.sql
 -- 퀴즈 시스템 시드 데이터 (clean-slate 재시드)
@@ -181,9 +161,7 @@ DELETE FROM quiz_templates;
 -- (시드는 다음 단계에서 작성)
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ quiz_redesign_part2.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ quiz_redesign_part2.sql
 -- ============================================================
 -- seeds/quiz_redesign_part2.sql
 -- 퀴즈 시스템 시드 2단계 — quiz_question + quiz_templates
@@ -1238,9 +1216,7 @@ VALUES
  true);
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch09.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch09.sql
 -- CH09 데이터모델 퀴즈 15문제
 -- 유형: multiple_choice(12), numeric(2), true_false(1)
 -- 난이도: easy(5), medium(7), hard(3)
@@ -1367,9 +1343,7 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
 ;
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch10.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch10.sql
 -- ============================================================
 -- seed_quiz_ch10.sql — CH10 계산 파이프라인 퀴즈 15문제
 -- 난이도: easy 5 / medium 7 / hard 3
@@ -1529,9 +1503,7 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  ARRAY['총액2', 'U항', '10원절사', 'Step8', '계산문제']);
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch11.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch11.sql
 -- ============================================================
 -- seed_quiz_ch11.sql — CH11 테스트 시나리오 기반 퀴즈 15문제
 -- 난이도: easy×3, medium×8, hard×4
@@ -1690,9 +1662,7 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  ARRAY['S10', '복합케이스', '총액2', '혼합보험', 'U항', 'CH11']);
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch12.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch12.sql
 -- ============================================================
 -- seed_quiz_ch12.sql — CH12 보훈 약국 약제비 청구 퀴즈 (15문항)
 -- 난이도: easy 3 / medium 8 / hard 4
@@ -1834,9 +1804,7 @@ VALUES
  ARRAY['chapter:CH12','ch12-base','MT038=A','도서벽지','60%감면','보훈위탁진료']);
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch01_ch04.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch01_ch04.sql
 -- ============================================================
 -- seed_quiz_ch01_ch04.sql
 -- CH01 ~ CH04 정적 문제 (24문항)
@@ -2044,9 +2012,7 @@ SET payload = '{"items":[{"id":"i1","label":"산제가산"},{"id":"i2","label":"
 WHERE chapter = 'CH04' AND question_type = 'ordering' AND question LIKE '가산 우선순위%';
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch05_ch08.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch05_ch08.sql
 -- ============================================================
 -- seed_quiz_ch05_ch08.sql
 -- CH05 ~ CH08 정적 문제 (24문항)
@@ -2287,9 +2253,7 @@ SET payload = '{"left":[{"id":"l1","label":"약품금액 (각 약품)"},{"id":"l
 WHERE chapter = 'CH07' AND question_type = 'matching' AND question LIKE '%계산 단계별%';
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ quiz_templates_seed.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ quiz_templates_seed.sql
 -- ============================================================
 -- quiz_templates_seed.sql
 -- 동적 퀴즈 템플릿 — quiz_templates 테이블 초기 시드
@@ -2527,9 +2491,7 @@ VALUES
  true);
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ quiz_templates_expansion.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ quiz_templates_expansion.sql
 -- ============================================================
 -- quiz_templates_expansion.sql
 -- 동적 퀴즈 템플릿 +70개 추가 (방안 1)
@@ -2898,9 +2860,7 @@ VALUES
  NULL, '{"clinicalGroups":["htn_dm_combo","hypertension_combo","elderly_polypharmacy"]}'::jsonb, true);
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch11_scenarios.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch11_scenarios.sql
 -- ============================================================
 -- seed_quiz_ch11_scenarios.sql
 -- CH11 공식 테스트 시나리오 S01~S13 → 자동 변환 Quiz 50문항
@@ -3304,9 +3264,7 @@ SET payload = '{"left":[{"id":"l1","label":"약품금액(각 약품)"},{"id":"l2
 WHERE question_type = 'matching' AND question LIKE '[종합]%반올림 함수%';
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch01_ch04_expansion.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch01_ch04_expansion.sql
 -- ============================================================
 -- seed_quiz_ch01_ch04_expansion.sql
 -- CH01~CH04 개념 문제 확장 (각 15문, 총 60문)
@@ -3349,10 +3307,10 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  ARRAY['chapter:CH01','lesson:lesson-03-drug-amount-basics','expansion','PD_PACK','medium']),
 
 ('CH01', 2, 'numeric',
- '단가 123원, 1회 0.333정, 1일 3회, 7일. 원미만 사사오입 후 PD_SUM? (원, 정수)',
- NULL, '860',
- 'amount = 0.333 × 3 × 7 = 6.993. PD_SUM = (int)(6.993 × 123 + 0.5) = (int)(860.639 + 0.5) = 861? 재계산: 0.333×3×7×123 = 860.139, +0.5 = 860.639, int() = 860. 정답 860원 (경계 주의).',
- ARRAY['chapter:CH01','lesson:lesson-03-drug-amount-basics','expansion','소수점','medium']),
+ '단가 150원, 1회 0.5정, 1일 4회, 6일. 원미만 사사오입 후 약품금액? (원, 정수)',
+ NULL, '1800',
+ 'amount = 0.5 × 4 × 6 = 12. 약품금액 = (int)(12 × 150 + 0.5) = 1,800원. 정수 곱셈이므로 사사오입 영향 없음. CH01 §5.',
+ ARRAY['chapter:CH01','lesson:lesson-03-drug-amount-basics','expansion','분할투여','medium']),
 
 ('CH01', 2, 'multiple_choice',
  '급여(covered) 약품은 어느 항으로 분류되는가?',
@@ -3497,9 +3455,9 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
 -- CH03 조제료 수가 계산 로직 — 추가 15문
 -- ============================================================
 
-('CH03', 1, 'numeric', '2026년 환산지수는 점수당 몇 원인가?',
- NULL, '105',
- '2026년 환산지수 = 105.5원 (정수 반환 시 반올림 106 또는 round1 기준 다름). 문제 단순화: 105로 답. (엄밀 105.5)',
+('CH03', 1, 'multiple_choice', '2026년 적용 환산지수는?',
+ '["99원","104.8원","105.5원","110원"]'::jsonb, '2',
+ '2026년 환산지수 = 105.5원 (보건복지부 고시). 2025년은 104.8원이었음. Z코드 금액 = 점수 × 환산지수, 원미만 사사오입.',
  ARRAY['chapter:CH03','lesson:lesson-04-dispensing-fees','expansion','환산지수','easy']),
 
 ('CH03', 2, 'multiple_choice', 'suga_fee 테이블의 핵심 필드는?',
@@ -3672,9 +3630,7 @@ SET payload = '{"steps":[{"id":"step1","label":"산제=Y → 가루약","value":
 WHERE question_type = 'error_spot' AND 'expansion' = ANY(tags) AND chapter = 'CH04' AND question LIKE '가산 판정 순서%';
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch05_ch08_expansion.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch05_ch08_expansion.sql
 -- ============================================================
 -- seed_quiz_ch05_ch08_expansion.sql
 -- CH05~CH08 개념 문제 확장 (각 15문, 총 60문)
@@ -4021,9 +3977,7 @@ SET payload = '{"steps":[{"id":"step1","label":"D80","value":"0원"},{"id":"step
 WHERE question_type = 'error_spot' AND 'expansion' = ANY(tags) AND chapter = 'CH08';
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_ch09_ch12_expansion.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_ch09_ch12_expansion.sql
 -- ============================================================
 -- seed_quiz_ch09_ch12_expansion.sql
 -- CH09~CH12 개념 문제 확장 (각 10문, 총 40문)
@@ -4270,9 +4224,7 @@ SET payload = '{"left":[{"id":"l1","label":"M10"},{"id":"l2","label":"M30"},{"id
 WHERE question_type = 'matching' AND 'expansion' = ANY(tags) AND chapter = 'CH12';
 
 
--- ╭─────────────────────────────────────────────────────────────╮
--- │  ▼ seed_quiz_exam_patterns.sql
--- ╰─────────────────────────────────────────────────────────────╯
+-- ▼ seed_quiz_exam_patterns.sql
 -- ============================================================
 -- seed_quiz_exam_patterns.sql
 -- 약사시험 기출 유형 25문 (방안 4)
@@ -4290,9 +4242,9 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
 -- ============================================================
 
 ('CH10', 2, 'numeric',
- '[실전] 45세 여성, 건강보험 C10, 평일 주간 내원. 내복약 1종(단가 600원, 1회 1정, 1일 3회, 10일분) 처방. 본인부담금은? (원)',
- NULL, '6700',
- '약품=600×1×3×10=18,000. 조제료(10일, Z4110): 790+1,720+1,150+4,950+680=9,290. 총액1=trunc10(27,290)=27,290. 본인부담=trunc100(27,290×0.3)=trunc100(8,187)=8,100? 재계산: 27,290 × 0.3 = 8,187 → trunc100 = 8,100원. (문서 기준 Z4110=4,950원 가정)',
+ '[실전] 45세 여성, 건강보험 C10, 평일 주간 내원. 내복약 1종(단가 600원, 1회 1정, 1일 3회, 10일분) 처방. 조제료 합계가 9,290원일 때 본인부담금은? (원)',
+ NULL, '8100',
+ '약품금액 = 600×1×3×10 = 18,000원. 조제료 = 9,290원. 총액1 = trunc10(18,000 + 9,290) = 27,290원. 본인부담 = trunc100(27,290 × 0.30) = trunc100(8,187) = 8,100원.',
  ARRAY['chapter:CH10','lesson:lesson-10-integrated-practice','exam-pattern','실전','종합','medium']),
 
 ('CH10', 3, 'numeric',
@@ -4314,9 +4266,9 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  ARRAY['chapter:CH10','lesson:lesson-06-copayment','exam-pattern','6세미만','야간','hard']),
 
 ('CH10', 3, 'numeric',
- '[실전] 자보 F10 35세, 내복 3종 (800/1/3/7 + 450/1/3/7 + 300/1/3/7). 할증 addRat=15%. 환자 실부담(userPrice + premium)? (원)',
- NULL, '37290',
- '약품합=16,800+9,450+6,300=32,550. 조제료(7일, 3종 내복)=8,660 가정. 총액1=trunc10(41,210)=41,210. userPrice=trunc10(41,210)=41,210? 자보는 전액본인=userPrice=41,210. 하지만 이 문제는 15% addRat 할증 추가: premium=floor(41,210×0.15)=6,181. 합=47,391. 단순화를 위해 total 24,240 기준 재계산: 답 37,290은 예시. (실전 문제 난이도 높음, 정확한 답은 총액에 따라 변함)',
+ '[실전] 자보 F10 환자, 총액1이 40,000원으로 확정됐다. addRat=15% 할증 적용 시 환자 실부담(userPrice + premium)은? (원)',
+ NULL, '46000',
+ 'F10 자동차보험: userPrice = trunc10(40,000) = 40,000원 (전액 본인부담). premium = floor(40,000 × 15/100) = 6,000원. 환자 실부담 = 40,000 + 6,000 = 46,000원. CH04 §4-9 M_AddRat floor 절사.',
  ARRAY['chapter:CH10','lesson:lesson-07-insurance-types','exam-pattern','자보','할증','hard']),
 
 ('CH10', 2, 'multiple_choice',
@@ -4326,9 +4278,9 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  ARRAY['chapter:CH10','lesson:lesson-06-copayment','exam-pattern','총액1','medium']),
 
 ('CH10', 3, 'numeric',
- '[실전] G10+M60 보훈 65세, 내복 500/1/3/7 단일약품. 3자배분 결과 중 보훈청구액(mpvaPrice)? (원)',
- NULL, '9120',
- '약품=10,500. 조제료(M60 감면): Z4107 4,320 + Z5000 680 = 5,000. 총액1=trunc10(15,500)=15,500. 보훈청 = 15,500 × 0.60 = 9,300? 재계산: 조제료 Z4107+Z5000 만 = 5,000. 총액=15,500. 보훈청=9,300원. (답 9,120은 다른 가정일 수 있음, 문제 재검증)',
+ '[실전] G10+M60 보훈 65세, 내복 500/1/3/7 단일약품. 조제료 합이 5,000원(Z1000/Z2000/Z3000 감면으로 0원, Z4107 4,320 + Z5000 680)일 때 보훈청구액(mpvaPrice)? (원)',
+ NULL, '9300',
+ '약품금액 = 10,500원. 조제료(M60 감면) = 5,000원. 총액1 = trunc10(15,500) = 15,500원. 보훈청구액 = 15,500 × 0.60 = 9,300원. 본인부담 = trunc100(6,200 × 0.30) = 1,800원, 공단청구 = 15,500 - 9,300 - 1,800 = 4,400원. CH11 §3.7 S07.',
  ARRAY['chapter:CH06','lesson:lesson-07-insurance-types','exam-pattern','보훈','M60','hard']),
 
 ('CH10', 2, 'numeric',

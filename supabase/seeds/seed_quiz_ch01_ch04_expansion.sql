@@ -40,10 +40,10 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
  ARRAY['chapter:CH01','lesson:lesson-03-drug-amount-basics','expansion','PD_PACK','medium']),
 
 ('CH01', 2, 'numeric',
- '단가 123원, 1회 0.333정, 1일 3회, 7일. 원미만 사사오입 후 PD_SUM? (원, 정수)',
- NULL, '860',
- 'amount = 0.333 × 3 × 7 = 6.993. PD_SUM = (int)(6.993 × 123 + 0.5) = (int)(860.639 + 0.5) = 861? 재계산: 0.333×3×7×123 = 860.139, +0.5 = 860.639, int() = 860. 정답 860원 (경계 주의).',
- ARRAY['chapter:CH01','lesson:lesson-03-drug-amount-basics','expansion','소수점','medium']),
+ '단가 150원, 1회 0.5정, 1일 4회, 6일. 원미만 사사오입 후 약품금액? (원, 정수)',
+ NULL, '1800',
+ 'amount = 0.5 × 4 × 6 = 12. 약품금액 = (int)(12 × 150 + 0.5) = 1,800원. 정수 곱셈이므로 사사오입 영향 없음. CH01 §5.',
+ ARRAY['chapter:CH01','lesson:lesson-03-drug-amount-basics','expansion','분할투여','medium']),
 
 ('CH01', 2, 'multiple_choice',
  '급여(covered) 약품은 어느 항으로 분류되는가?',
@@ -188,9 +188,9 @@ INSERT INTO quiz_question (chapter, difficulty, question_type, question, choices
 -- CH03 조제료 수가 계산 로직 — 추가 15문
 -- ============================================================
 
-('CH03', 1, 'numeric', '2026년 환산지수는 점수당 몇 원인가?',
- NULL, '105',
- '2026년 환산지수 = 105.5원 (정수 반환 시 반올림 106 또는 round1 기준 다름). 문제 단순화: 105로 답. (엄밀 105.5)',
+('CH03', 1, 'multiple_choice', '2026년 적용 환산지수는?',
+ '["99원","104.8원","105.5원","110원"]'::jsonb, '2',
+ '2026년 환산지수 = 105.5원 (보건복지부 고시). 2025년은 104.8원이었음. Z코드 금액 = 점수 × 환산지수, 원미만 사사오입.',
  ARRAY['chapter:CH03','lesson:lesson-04-dispensing-fees','expansion','환산지수','easy']),
 
 ('CH03', 2, 'multiple_choice', 'suga_fee 테이블의 핵심 필드는?',
