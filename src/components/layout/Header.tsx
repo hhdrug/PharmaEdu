@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Pill, Menu, X, Calendar, Activity } from 'lucide-react';
 import { useState } from 'react';
 import { MobileNav } from './MobileNav';
+import { UserMenu } from './UserMenu';
 
 interface NavLink {
   href: string;
@@ -71,6 +72,11 @@ function Header() {
                 );
               })}
             </nav>
+
+            {/* 사용자 메뉴 (데스크탑) */}
+            <div className="hidden md:flex items-center ml-2">
+              <UserMenu />
+            </div>
 
             {/* 모바일 햄버거 버튼 */}
             <button
