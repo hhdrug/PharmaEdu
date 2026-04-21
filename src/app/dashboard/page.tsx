@@ -25,7 +25,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { loadQuizHistory, type QuizHistoryEntry, formatRelativeTime } from '@/lib/quiz/history';
-import { getWrongAnswers, getUnresolvedWrongAnswers, getDueForReview, type WrongAnswerEntry } from '@/lib/quiz/wrong-notes';
+import { getWrongAnswers, type WrongAnswerEntry } from '@/lib/quiz/wrong-notes';
 import { getLearningState } from '@/lib/learning/progress';
 import { LESSONS } from '@/content/lessons';
 import { CHAPTERS } from '@/content/chapters';
@@ -122,11 +122,13 @@ export default function DashboardPage() {
   const [history, setHistory] = useState<QuizHistoryEntry[]>([]);
   const [wrongs, setWrongs] = useState<WrongAnswerEntry[]>([]);
   const [completedLessons, setCompletedLessons] = useState(0);
+  const [now, setNow] = useState(0);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     setHistory(loadQuizHistory());
     setWrongs(getWrongAnswers());
+    setNow(Date.now());
 
     // 레슨 진도
     const state = getLearningState();
@@ -137,8 +139,11 @@ export default function DashboardPage() {
   }, []);
 
   const stats = useMemo(() => calculateStats(history, wrongs), [history, wrongs]);
-  const unresolvedList = useMemo(() => getUnresolvedWrongAnswers().slice(0, 5), [wrongs]);
-  const dueCount = useMemo(() => getDueForReview().length, [wrongs]);
+  const unresolvedList = useMemo(() => wrongs.filter((w) => !w.resolved).slice(0, 5), [wrongs]);
+  const dueCount = useMemo(
+    () => wrongs.filter((w) => (w.nextReviewAt ?? 0) <= now).length,
+    [wrongs, now],
+  );
 
   if (!mounted) {
     return (

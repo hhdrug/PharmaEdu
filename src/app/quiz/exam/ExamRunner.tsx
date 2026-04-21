@@ -51,9 +51,7 @@ export function ExamRunner({ questions, totalMinutes }: Props) {
       setRemainingMs((prev) => {
         if (prev <= 1000) {
           clearInterval(iv);
-          /* eslint-disable react-hooks/set-state-in-effect */
           setPhase('submitted');
-          /* eslint-enable react-hooks/set-state-in-effect */
           return 0;
         }
         return prev - 1000;

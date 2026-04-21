@@ -59,8 +59,8 @@ const STATUS_OPTIONS = [
 type PeriodFilter = 'all' | 'today' | 'week' | 'month';
 type StatusFilter = 'all' | 'unresolved' | 'resolved';
 
-function formatFutureDays(ts: number): string {
-  const diff = ts - Date.now();
+function formatFutureDays(ts: number, now: number): string {
+  const diff = ts - now;
   const day = Math.round(diff / 86_400_000);
   if (day <= 0) return '오늘';
   if (day === 1) return '내일';
@@ -93,9 +93,10 @@ function getPeriodRange(period: PeriodFilter): { start: number; end: number } | 
 interface WrongNoteCardProps {
   entry: WrongAnswerEntry;
   onDelete: (id: number) => void;
+  now: number;
 }
 
-function WrongNoteCard({ entry, onDelete }: WrongNoteCardProps) {
+function WrongNoteCard({ entry, onDelete, now }: WrongNoteCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -117,8 +118,8 @@ function WrongNoteCard({ entry, onDelete }: WrongNoteCardProps) {
           )}
         </div>
         <span className="text-xs text-text-muted whitespace-nowrap">
-          {entry.nextReviewAt && entry.nextReviewAt > Date.now()
-            ? `다음 복습 ${formatFutureDays(entry.nextReviewAt)}`
+          {entry.nextReviewAt && entry.nextReviewAt > now
+            ? `다음 복습 ${formatFutureDays(entry.nextReviewAt, now)}`
             : formatRelativeTime(entry.timestamp)}
         </span>
       </div>
@@ -261,11 +262,14 @@ export default function WrongNotesPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [confirmClear, setConfirmClear] = useState(false);
   const [reviewQueue, setReviewQueue] = useState<WrongAnswerEntry[] | null>(null);
+  // 마운트 시점 now — 렌더 중 Date.now() 호출을 피하기 위함
+  const [now, setNow] = useState<number>(0);
 
   // SSR 안전 로드: useEffect는 클라이언트에서만 실행됨
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     setAllEntries(getWrongAnswers());
+    setNow(Date.now());
     // ?due=1 → 복습 모드 자동 시작
     if (searchParams.get('due') === '1') {
       const due = getDueForReview();
@@ -290,7 +294,7 @@ export default function WrongNotesPage() {
     setReviewQueue(queue);
   }, [toast]);
 
-  const dueCount = useMemo(() => (allEntries ?? []).filter((e) => (e.nextReviewAt ?? 0) <= Date.now()).length, [allEntries]);
+  const dueCount = useMemo(() => (allEntries ?? []).filter((e) => (e.nextReviewAt ?? 0) <= now).length, [allEntries, now]);
 
   // 필터 적용 (allEntries가 null이면 빈 배열로 처리)
   const filtered = useMemo(() => {
@@ -479,6 +483,7 @@ export default function WrongNotesPage() {
               key={entry.questionId}
               entry={entry}
               onDelete={handleDelete}
+              now={now}
             />
           ))}
         </div>

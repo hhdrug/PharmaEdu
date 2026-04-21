@@ -32,13 +32,11 @@ export function useSession(): SessionState {
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      /* eslint-disable react-hooks/set-state-in-effect */
       setState({
         session: data.session,
         user: data.session?.user ?? null,
         loading: false,
       });
-      /* eslint-enable react-hooks/set-state-in-effect */
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
