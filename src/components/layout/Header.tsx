@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Pill, Menu, X, Calendar, Activity } from 'lucide-react';
+import { Pill, Menu, X, Calendar, Activity, Layers } from 'lucide-react';
 import { useState } from 'react';
 import { MobileNav } from './MobileNav';
 import { UserMenu } from './UserMenu';
@@ -18,6 +18,7 @@ const navLinks: NavLink[] = [
   { href: '/calculator', label: '계산기' },
   { href: '/learn', label: '학습' },
   { href: '/quiz', label: '퀴즈' },
+  { href: '/flashcards', label: '카드', icon: Layers },
   { href: '/daily', label: '데일리', icon: Calendar },
 ];
 
