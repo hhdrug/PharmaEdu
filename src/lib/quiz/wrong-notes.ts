@@ -38,7 +38,19 @@ export interface WrongAnswerEntry {
   timestamp: number;
   attempts: number;       // how many times tried
   resolved: boolean;      // after getting it right
+  // ── SM-2 Lite 간격 반복 (optional, 기존 데이터 호환) ───────────
+  /** 다음 복습 예정 (Unix ms). 지나면 due. */
+  nextReviewAt?: number;
+  /** 현재 복습 간격 (일 단위). 초기값 1. */
+  interval?: number;
+  /** 난이도 계수 (1.3 ~ 2.5). 초기값 2.5. */
+  easiness?: number;
+  /** 복습 횟수. */
+  reviewCount?: number;
 }
+
+/** SM-2 Lite 품질 등급 */
+export type ReviewQuality = 'again' | 'hard' | 'good' | 'easy';
 
 // ── 상수 ─────────────────────────────────────────────────────
 
@@ -79,12 +91,26 @@ function writeToStorage(entries: WrongAnswerEntry[]): void {
 export function addWrongAnswer(entry: WrongAnswerEntry): void {
   const entries = readFromStorage();
   const idx = entries.findIndex((e) => e.questionId === entry.questionId);
+  const DAY = 24 * 60 * 60 * 1000;
   if (idx !== -1) {
-    // 기존 항목 갱신
-    entries[idx] = entry;
+    // 기존 항목 갱신 — SM-2 필드는 보존
+    const prev = entries[idx];
+    entries[idx] = {
+      ...entry,
+      nextReviewAt: prev.nextReviewAt ?? Date.now() + DAY,
+      interval: prev.interval ?? 1,
+      easiness: prev.easiness ?? 2.5,
+      reviewCount: prev.reviewCount ?? 0,
+    };
   } else {
-    // 신규 항목을 앞에 삽입하고 최대치 초과 제거
-    entries.unshift(entry);
+    // 신규 항목 — 내일 복습 예정으로 초기화
+    entries.unshift({
+      ...entry,
+      nextReviewAt: Date.now() + DAY,
+      interval: 1,
+      easiness: 2.5,
+      reviewCount: 0,
+    });
     if (entries.length > MAX_ENTRIES) {
       entries.splice(MAX_ENTRIES);
     }
@@ -136,4 +162,72 @@ export function filterByDateRange(start: number, end: number): WrongAnswerEntry[
   return readFromStorage().filter(
     (e) => e.timestamp >= start && e.timestamp <= end,
   );
+}
+
+// ── SM-2 Lite 간격 반복 ───────────────────────────────────────
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * 복습 결과를 기록하고 다음 복습일을 산정한다.
+ * - again: 간격 1일 리셋, easiness -0.2
+ * - hard:  간격 × 1.3, easiness -0.15
+ * - good:  간격 × easiness
+ * - easy:  간격 × easiness × 1.3, easiness +0.15
+ */
+export function scheduleReview(
+  questionId: number,
+  quality: ReviewQuality,
+): void {
+  const entries = readFromStorage();
+  const idx = entries.findIndex((e) => e.questionId === questionId);
+  if (idx === -1) return;
+
+  const e = entries[idx];
+  const prevInterval = e.interval ?? 1;
+  const prevEase = e.easiness ?? 2.5;
+  const prevCount = e.reviewCount ?? 0;
+
+  let interval = prevInterval;
+  let easiness = prevEase;
+
+  switch (quality) {
+    case 'again':
+      interval = 1;
+      easiness = Math.max(1.3, prevEase - 0.2);
+      break;
+    case 'hard':
+      interval = Math.max(1, Math.round(prevInterval * 1.3));
+      easiness = Math.max(1.3, prevEase - 0.15);
+      break;
+    case 'good':
+      interval = Math.max(1, Math.round(prevInterval * prevEase));
+      break;
+    case 'easy':
+      interval = Math.max(1, Math.round(prevInterval * prevEase * 1.3));
+      easiness = Math.min(3.0, prevEase + 0.15);
+      break;
+  }
+
+  entries[idx] = {
+    ...e,
+    interval,
+    easiness,
+    reviewCount: prevCount + 1,
+    nextReviewAt: Date.now() + interval * DAY_MS,
+    resolved: quality === 'easy' || quality === 'good' ? true : false,
+  };
+  writeToStorage(entries);
+}
+
+/** 지금 시각 기준 복습 예정 항목(미해결 + due)만 반환한다. */
+export function getDueForReview(now: number = Date.now()): WrongAnswerEntry[] {
+  return readFromStorage().filter(
+    (e) => (e.nextReviewAt ?? 0) <= now,
+  );
+}
+
+/** 오늘(24시간 이내) 복습해야 할 건수. */
+export function getDueCount(now: number = Date.now()): number {
+  return getDueForReview(now).length;
 }
