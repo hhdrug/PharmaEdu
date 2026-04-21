@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   CheckCircle,
@@ -11,6 +12,8 @@ import {
   RotateCcw,
   BookOpen,
   Search,
+  Flame,
+  Play,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -20,8 +23,10 @@ import {
   getWrongAnswers,
   deleteWrongAnswer,
   clearWrongAnswers,
+  getDueForReview,
   type WrongAnswerEntry,
 } from '@/lib/quiz/wrong-notes';
+import { ReviewSession } from './ReviewSession';
 import { DIFFICULTY_LABEL, DIFFICULTY_VARIANT } from '@/lib/quiz/types';
 import { formatRelativeTime } from '@/lib/quiz/history';
 import { getRecommendationsForWrongAnswer } from '@/lib/learning/cross-refs';
@@ -53,6 +58,14 @@ const STATUS_OPTIONS = [
 
 type PeriodFilter = 'all' | 'today' | 'week' | 'month';
 type StatusFilter = 'all' | 'unresolved' | 'resolved';
+
+function formatFutureDays(ts: number): string {
+  const diff = ts - Date.now();
+  const day = Math.round(diff / 86_400_000);
+  if (day <= 0) return '오늘';
+  if (day === 1) return '내일';
+  return `${day}일 후`;
+}
 
 // ── 유틸 ─────────────────────────────────────────────────────
 
@@ -99,9 +112,14 @@ function WrongNoteCard({ entry, onDelete }: WrongNoteCardProps) {
           ) : (
             <Badge variant="error">미해결</Badge>
           )}
+          {(entry.reviewCount ?? 0) > 0 && (
+            <Badge variant="info">{entry.reviewCount}회 복습</Badge>
+          )}
         </div>
         <span className="text-xs text-text-muted whitespace-nowrap">
-          {formatRelativeTime(entry.timestamp)}
+          {entry.nextReviewAt && entry.nextReviewAt > Date.now()
+            ? `다음 복습 ${formatFutureDays(entry.nextReviewAt)}`
+            : formatRelativeTime(entry.timestamp)}
         </span>
       </div>
 
@@ -235,19 +253,44 @@ function RecommendationsSection({ entry }: { entry: WrongAnswerEntry }) {
 
 export default function WrongNotesPage() {
   const toast = useToast();
+  const searchParams = useSearchParams();
   // null = 아직 마운트 전(SSR 하이드레이션 불일치 방지)
   const [allEntries, setAllEntries] = useState<WrongAnswerEntry[] | null>(null);
   const [chapterFilter, setChapterFilter] = useState<string>('ALL');
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [confirmClear, setConfirmClear] = useState(false);
+  const [reviewQueue, setReviewQueue] = useState<WrongAnswerEntry[] | null>(null);
 
   // SSR 안전 로드: useEffect는 클라이언트에서만 실행됨
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     setAllEntries(getWrongAnswers());
+    // ?due=1 → 복습 모드 자동 시작
+    if (searchParams.get('due') === '1') {
+      const due = getDueForReview();
+      if (due.length > 0) setReviewQueue(due);
+    }
     /* eslint-enable react-hooks/set-state-in-effect */
+  }, [searchParams]);
+
+  // 복습 모드 종료
+  const exitReview = useCallback(() => {
+    setReviewQueue(null);
+    setAllEntries(getWrongAnswers());
   }, []);
+
+  // 복습 모드 시작
+  const startReview = useCallback((useDueOnly: boolean) => {
+    const queue = useDueOnly ? getDueForReview() : (getWrongAnswers().filter((e) => !e.resolved));
+    if (queue.length === 0) {
+      toast.show({ variant: 'info', message: useDueOnly ? '오늘 복습할 문제가 없습니다.' : '미해결 오답이 없습니다.' });
+      return;
+    }
+    setReviewQueue(queue);
+  }, [toast]);
+
+  const dueCount = useMemo(() => (allEntries ?? []).filter((e) => (e.nextReviewAt ?? 0) <= Date.now()).length, [allEntries]);
 
   // 필터 적용 (allEntries가 null이면 빈 배열로 처리)
   const filtered = useMemo(() => {
@@ -305,6 +348,24 @@ export default function WrongNotesPage() {
   const isFiltered =
     chapterFilter !== 'ALL' || periodFilter !== 'all' || statusFilter !== 'all';
 
+  // ── 복습 모드 ────────────────────────────────────────────────
+  if (reviewQueue) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
+            <Flame className="w-6 h-6 text-warning-500" aria-hidden="true" />
+            복습 세션
+          </h1>
+          <p className="text-sm text-text-muted">
+            평가에 따라 다음 복습일이 자동으로 조정됩니다 (SM-2 알고리즘).
+          </p>
+        </div>
+        <ReviewSession queue={reviewQueue} onExit={exitReview} />
+      </div>
+    );
+  }
+
   // ── 렌더링 ───────────────────────────────────────────────────
 
   return (
@@ -314,20 +375,35 @@ export default function WrongNotesPage() {
         <div>
           <h1 className="text-2xl font-bold text-text-primary">오답 노트</h1>
           <p className="text-sm text-text-muted mt-0.5">
-            총 {(allEntries ?? []).length}개의 오답이 있습니다.
+            총 {(allEntries ?? []).length}개의 오답
+            {dueCount > 0 && (
+              <> · <span className="text-warning-500 font-semibold">오늘 복습 {dueCount}건</span></>
+            )}
           </p>
         </div>
 
         {/* 상단 액션 */}
         <div className="flex flex-wrap gap-2">
+          {dueCount > 0 && (
+            <Button variant="primary" size="sm" onClick={() => startReview(true)}>
+              <Flame className="w-3.5 h-3.5" />
+              오늘 복습 ({dueCount})
+            </Button>
+          )}
+          {unresolvedIds.length > 0 && dueCount === 0 && (
+            <Button variant="secondary" size="sm" onClick={() => startReview(false)}>
+              <Play className="w-3.5 h-3.5" />
+              전체 복습 ({unresolvedIds.length})
+            </Button>
+          )}
           {unresolvedIds.length > 0 && (
             <Link
               href={`/quiz/play?wrongQuestionIds=${unresolvedIds.join(',')}`}
               className="inline-flex"
             >
-              <Button variant="primary" size="sm">
+              <Button variant="ghost" size="sm">
                 <RotateCcw className="w-3.5 h-3.5" />
-                전체 다시 풀기 ({unresolvedIds.length})
+                다시 풀기 ({unresolvedIds.length})
               </Button>
             </Link>
           )}
