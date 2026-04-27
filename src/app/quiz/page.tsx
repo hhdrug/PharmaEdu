@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { HelpCircle, Shuffle, Star, ChevronRight, Infinity as InfinityIcon } from 'lucide-react';
+import { HelpCircle, Shuffle, Star, ChevronRight, Infinity as InfinityIcon, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -31,6 +31,30 @@ export default async function QuizHomePage() {
           <span className="font-semibold text-primary-500">{totalCount}문제</span>가 있습니다.
         </p>
       </div>
+
+      {/* ── 슥슥 풀이 (모바일 무한) ── */}
+      <section>
+        <Link
+          href="/swipe"
+          className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded-xl"
+        >
+          <Card
+            variant="elevated"
+            className="flex items-center gap-4 cursor-pointer hover:-translate-y-0.5 transition-transform bg-gradient-to-br from-primary-500 to-primary-600 text-white border-0"
+          >
+            <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-6 h-6 text-white" aria-hidden="true" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-lg">슥슥 풀이</p>
+              <p className="text-sm text-white/90 mt-0.5">
+                누워서 한 손으로 무한 풀이 — 객관식만, 탭 한 번에 채점
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white flex-shrink-0" aria-hidden="true" />
+          </Card>
+        </Link>
+      </section>
 
       {/* ── 오늘의 1문제 티저 ── */}
       <section>
