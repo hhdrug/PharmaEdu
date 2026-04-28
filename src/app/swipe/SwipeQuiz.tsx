@@ -52,14 +52,16 @@ export function SwipeQuiz({ questions }: Props) {
   const isAnswered = picked !== null;
   const correctIdx = useMemo(() => {
     if (!q) return -1;
-    if (q.question_type === 'true_false') {
-      // true_false 의 correct_answer 는 'true'/'false' 또는 0/1
-      const ca = String(q.correct_answer).toLowerCase();
-      if (ca === 'true' || ca === '1') return 0;
-      if (ca === 'false' || ca === '0') return 1;
-    }
-    const n = parseInt(String(q.correct_answer), 10);
-    return Number.isFinite(n) ? n : -1;
+    // 시드 포맷 통일: multiple_choice / true_false 모두 0-based 인덱스 문자열
+    // (true_false는 choices=["O","X"] 또는 ["참","거짓"], correct_answer='0'|'1')
+    const ca = String(q.correct_answer);
+    const n = parseInt(ca, 10);
+    if (Number.isFinite(n)) return n;
+    // 레거시: 'true'/'false' 문자열도 안전하게 처리
+    const lc = ca.toLowerCase();
+    if (lc === 'true') return 0;
+    if (lc === 'false') return 1;
+    return -1;
   }, [q]);
 
   // ── 채점 ───────────────────────────────────────────────────
@@ -80,8 +82,8 @@ export function SwipeQuiz({ questions }: Props) {
 
       // 오답노트 연동 (정적 문제 = number id 만)
       if (typeof q.id === 'number') {
+        const existing = getWrongAnswers().find((e) => e.questionId === q.id);
         if (!isCorrect) {
-          const existing = getWrongAnswers().find((e) => e.questionId === q.id);
           addWrongAnswer({
             questionId: q.id,
             question: q.question,
@@ -94,9 +96,8 @@ export function SwipeQuiz({ questions }: Props) {
             attempts: existing ? existing.attempts + 1 : 1,
             resolved: false,
           });
-        } else {
-          const existing = getWrongAnswers().find((e) => e.questionId === q.id);
-          if (existing && !existing.resolved) markResolved(q.id);
+        } else if (existing && !existing.resolved) {
+          markResolved(q.id);
         }
       }
     },
@@ -172,9 +173,12 @@ export function SwipeQuiz({ questions }: Props) {
     const dx = t.clientX - touchStart.current.x;
     const dy = t.clientY - touchStart.current.y;
     touchStart.current = null;
-    // 50px 이상 이동 → 스와이프 인식
-    if (Math.abs(dx) > 50 || Math.abs(dy) > 50) {
-      if (isAnswered) handleNext();
+    if (!isAnswered) return;
+    // 가로 스와이프(좌우 50px↑) 만 "다음"으로 인식.
+    // 세로 제스처는 해설 스크롤용으로 보존 — 의도치 않은 다음 트리거 방지.
+    const isHorizontal = Math.abs(dx) > Math.abs(dy);
+    if (isHorizontal && Math.abs(dx) > 50) {
+      handleNext();
     }
   };
 
