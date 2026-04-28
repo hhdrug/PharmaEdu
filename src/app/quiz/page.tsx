@@ -7,14 +7,16 @@ import { getCategories, getDailyQuestion, getQuestionCount } from '@/lib/quiz/cl
 import { DIFFICULTY_LABEL, DIFFICULTY_VARIANT } from '@/lib/quiz/types';
 import { QuizHistoryWidget } from './QuizHistoryWidget';
 
-export const dynamic = 'force-dynamic';
+// 시드 고정 데이터 → 1시간 ISR 캐시. 매 요청마다 SSR + DB 라운드트립 강제하던 force-dynamic 제거.
+export const revalidate = 3600;
 
 export default async function QuizHomePage() {
-  const [categories, dailyQuestion, totalCount] = await Promise.all([
+  // 카테고리/총개수를 먼저 받아오고, 그 count 를 daily 에 주입해 중복 쿼리 회피.
+  const [categories, totalCount] = await Promise.all([
     getCategories(),
-    getDailyQuestion(),
     getQuestionCount(),
   ]);
+  const dailyQuestion = await getDailyQuestion(totalCount);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">

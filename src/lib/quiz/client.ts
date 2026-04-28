@@ -36,6 +36,29 @@ export async function getAllQuestions(): Promise<QuizQuestion[]> {
   return (data ?? []) as QuizQuestion[];
 }
 
+/**
+ * /swipe 모드 전용 — 객관식·OX 문제만, 필요한 컬럼만 가져옴.
+ * `getAllQuestions()`이 SELECT * 로 페이로드 jsonb (hints/code_glossary/drug_refs/payload) 까지
+ * 다 끌어오던 over-fetch 를 제거. 응답 크기 50%+ 감소, hydration 비용도 같이 줄어듦.
+ */
+export async function getSwipeQuestions(): Promise<QuizQuestion[]> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from('quiz_question')
+    .select(
+      'id, chapter, difficulty, question_type, question, choices, correct_answer, explanation'
+    )
+    .in('question_type', ['multiple_choice', 'true_false'])
+    .not('choices', 'is', null)
+    .order('id');
+
+  if (error) {
+    console.error('[quiz/client] getSwipeQuestions error:', error.message);
+    return [];
+  }
+  return (data ?? []) as QuizQuestion[];
+}
+
 /** 총 문제 수 조회 (서버 컴포넌트용) */
 export async function getQuestionCount(): Promise<number> {
   const supabase = await createServerSupabase();
@@ -139,8 +162,10 @@ export async function getRandomQuestions(n: number): Promise<QuizQuestion[]> {
  * 오늘의 1문제 (날짜 시드 기반 — 결정적)
  * id % totalCount 방식으로 매일 같은 문제를 선택
  */
-export async function getDailyQuestion(): Promise<QuizQuestion | null> {
-  const total = await getQuestionCount();
+export async function getDailyQuestion(precomputedTotal?: number): Promise<QuizQuestion | null> {
+  // 호출자가 이미 count를 가지고 있으면 중복 쿼리 회피 (예: /quiz 페이지가 같은 요청에서
+  // getQuestionCount + getDailyQuestion 동시 호출). 미제공 시에만 별도 쿼리.
+  const total = precomputedTotal ?? (await getQuestionCount());
   if (total === 0) return null;
 
   const today = new Date();

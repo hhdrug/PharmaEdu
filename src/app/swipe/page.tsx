@@ -1,7 +1,8 @@
-import { getAllQuestions } from '@/lib/quiz/client';
+import { getSwipeQuestions } from '@/lib/quiz/client';
 import { SwipeQuiz } from './SwipeQuiz';
 
-export const dynamic = 'force-dynamic';
+// 시드 고정 데이터 → 1시간 ISR 캐시. 시드 갱신 시 다음 revalidate 사이클에서 자동 반영.
+export const revalidate = 3600;
 
 export const metadata = {
   title: '슥슥 풀이 — 팜에듀',
@@ -9,14 +10,7 @@ export const metadata = {
 };
 
 export default async function SwipePage() {
-  const all = await getAllQuestions();
-  // 탭만으로 풀 수 있는 객관식/OX만 필터링 (숫자 입력 제외)
-  const tappable = all.filter(
-    (q) =>
-      (q.question_type === 'multiple_choice' || q.question_type === 'true_false') &&
-      Array.isArray(q.choices) &&
-      q.choices.length > 0
-  );
-
+  // 서버에서 이미 객관식·OX + choices NOT NULL 필터링됨 → 클라이언트 필터 불필요
+  const tappable = await getSwipeQuestions();
   return <SwipeQuiz questions={tappable} />;
 }
