@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { createPublicSupabase } from '@/lib/supabase-server';
 import type { QuizQuestion, QuizCategory } from './types';
 
 // ── 카테고리 조회 ────────────────────────────────────────────────
 
 /** 모든 카테고리 조회 (order_idx 순) — 서버 컴포넌트용 */
 export async function getCategories(): Promise<QuizCategory[]> {
-  const supabase = await createServerSupabase();
+  // 공개 데이터 → cookies() 미사용 클라이언트로 페이지 ISR 활성화
+  const supabase = createPublicSupabase();
   const { data, error } = await supabase
     .from('quiz_category')
     .select('*')
@@ -23,7 +24,7 @@ export async function getCategories(): Promise<QuizCategory[]> {
 
 /** 전체 문제 목록 (서버 컴포넌트용) */
 export async function getAllQuestions(): Promise<QuizQuestion[]> {
-  const supabase = await createServerSupabase();
+  const supabase = createPublicSupabase();
   const { data, error } = await supabase
     .from('quiz_question')
     .select('*')
@@ -42,7 +43,7 @@ export async function getAllQuestions(): Promise<QuizQuestion[]> {
  * 다 끌어오던 over-fetch 를 제거. 응답 크기 50%+ 감소, hydration 비용도 같이 줄어듦.
  */
 export async function getSwipeQuestions(): Promise<QuizQuestion[]> {
-  const supabase = await createServerSupabase();
+  const supabase = createPublicSupabase();
   const { data, error } = await supabase
     .from('quiz_question')
     .select(
@@ -61,7 +62,7 @@ export async function getSwipeQuestions(): Promise<QuizQuestion[]> {
 
 /** 총 문제 수 조회 (서버 컴포넌트용) */
 export async function getQuestionCount(): Promise<number> {
-  const supabase = await createServerSupabase();
+  const supabase = createPublicSupabase();
   const { count, error } = await supabase
     .from('quiz_question')
     .select('*', { count: 'exact', head: true });
@@ -75,7 +76,7 @@ export async function getQuestionCount(): Promise<number> {
  * @param chapterNumber - 'CH01' 형식의 챕터 번호
  */
 export async function getChapterQuestionCount(chapterNumber: string): Promise<number> {
-  const supabase = await createServerSupabase();
+  const supabase = createPublicSupabase();
   const { count, error } = await supabase
     .from('quiz_question')
     .select('*', { count: 'exact', head: true })
@@ -99,7 +100,7 @@ export async function getQuestions(opts?: {
   difficulty?: 1 | 2 | 3;
   limit?: number;
 }): Promise<QuizQuestion[]> {
-  const supabase = await createServerSupabase();
+  const supabase = createPublicSupabase();
   let query = supabase.from('quiz_question').select('*').order('id');
 
   if (opts?.chapter) {
@@ -126,7 +127,7 @@ export async function getQuestions(opts?: {
  * RPC가 없는 환경(local 개발 등)에서는 COUNT → random offset 방식으로 fallback.
  */
 export async function getRandomQuestions(n: number): Promise<QuizQuestion[]> {
-  const supabase = await createServerSupabase();
+  const supabase = createPublicSupabase();
 
   // 1차 시도: RPC 방식 (DB-side ORDER BY random())
   const { data: rpcData, error: rpcError } = await supabase
@@ -176,7 +177,7 @@ export async function getDailyQuestion(precomputedTotal?: number): Promise<QuizQ
     today.getDate();
   const targetId = (seed % total) + 1; // 1-indexed ID 범위에 근사
 
-  const supabase = await createServerSupabase();
+  const supabase = createPublicSupabase();
   const { data, error } = await supabase
     .from('quiz_question')
     .select('*')
@@ -241,7 +242,7 @@ export async function getCategoriesClient(): Promise<QuizCategory[]> {
  * 컬럼이 없거나 null이면 null 반환.
  */
 export async function getCategoryChapter(slug: string): Promise<string | null> {
-  const supabase = await createServerSupabase();
+  const supabase = createPublicSupabase();
   const { data, error } = await supabase
     .from('quiz_category')
     .select('chapter')

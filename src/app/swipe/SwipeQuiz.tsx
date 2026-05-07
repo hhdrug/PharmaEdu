@@ -70,6 +70,10 @@ export function SwipeQuiz({ questions }: Props) {
       if (picked !== null || !q) return;
       setPicked(i);
       const isCorrect = evaluateAnswer(String(i), q);
+      // 햅틱 피드백 — 정답 짧게, 오답 두 번. 인지 latency 가려 반응성 체감↑
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate(isCorrect ? 15 : [12, 40, 12]);
+      }
       setStats((s) => {
         const newStreak = isCorrect ? s.streak + 1 : 0;
         return {
